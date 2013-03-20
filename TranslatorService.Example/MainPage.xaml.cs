@@ -36,6 +36,7 @@ namespace TranslatorService.Example
         {
             this.InitializeComponent();
 
+            /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
             speech.AudioFormat = SpeakStreamFormat.MP3;
             speech.AudioQuality = SpeakStreamQuality.MaxQuality;
@@ -46,8 +47,17 @@ namespace TranslatorService.Example
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite"));
             db.CreateTable<Button>();
 
+            /* Set up combobox */
+            // Source: http://social.msdn.microsoft.com/Forums/en-US/winappswithcsharp/thread/1cb9c5b9-3ef6-4c88-b747-ae222c38c922/
+            var colorChoices = typeof(Colors).GetTypeInfo().DeclaredProperties;
+            foreach (var item in colorChoices)
+            {
+                ColorChoices.Items.Add(item);
+            }
+            ColorChoices.DataContext = colorChoices;
+
             /* Get and insert sample buttons from system colors */
-            var _Colors = typeof(Colors)
+            /*var _Colors = typeof(Colors)
                 .GetRuntimeProperties()
                 .Select((x, i) => new
                 {
@@ -61,7 +71,7 @@ namespace TranslatorService.Example
             foreach (var c in _Colors)
             {
                 db.Insert(new Button { Text = c.Name, ColSpan = c.ColSpan, RowSpan = c.RowSpan, Order = c.Index, ColorHex = c.Color.ToString() });
-            }
+            } */
             
             /* Set data context to Button table */
             this.DataContext = db.Table<Button>().ToList();
@@ -106,13 +116,6 @@ namespace TranslatorService.Example
         {
         }
 
-        private void SpeakButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(SpeechText.Text))
-                return;
-            Speak_String(SpeechText.Text);
-        }
-
         private async void Speak_String(string text)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
@@ -148,10 +151,52 @@ namespace TranslatorService.Example
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
+            /* Speak string */
+            if (string.IsNullOrWhiteSpace(SpeechText.Text))
+                return;
+            Speak_String(SpeechText.Text);
+
+            Color selection;
+            /* Get selected color */
+            if (ColorChoices.SelectedIndex != -1)
+            {
+                var pi = ColorChoices.SelectedItem as PropertyInfo;
+                selection = (Color)pi.GetValue(null);
+            }
+            else
+                selection = Colors.Black;
+
+            /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
             {
-                db.Insert(new Button { Text = "Test", ColSpan = ColSpan(1), RowSpan = RowSpan(1), Order = 0, ColorHex = Colors.Red.ToString() });
+                db.Insert(new Button { Text = SpeechText.Text, ColSpan = ColSpan(1), RowSpan = RowSpan(1), Order = 0, ColorHex = selection.ToString() });
                 this.DataContext = db.Table<Button>().ToList();
+            }
+
+            /* Clear textbox */
+            SpeechText.Text = "";
+        }
+
+        private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            AppBar.IsOpen = true;
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            {
+                db.Delete(DynamicGrid.SelectedItem);
+                this.DataContext = db.Table<Button>().ToList();
+                AppBar.IsOpen = false;
+            }
+        }
+
+        private void Item_Deselected(object sender, RoutedEventArgs e)
+        {
+            if (DynamicGrid.SelectedItem == null)
+            {
+                AppBar.IsOpen = false;
             }
         }
     }

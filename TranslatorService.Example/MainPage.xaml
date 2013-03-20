@@ -27,7 +27,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="140"/>
             <RowDefinition Height="15"/>
-            <RowDefinition Height="400"/>
+            <RowDefinition Height="414"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -42,7 +42,7 @@
             <MediaElement x:Name="SpeechMediaElement"></MediaElement>
         </Grid>
 
-        <local:MyGridView x:Name="DynamicGrid" Margin="0,0,0,3" Grid.Row="2" IsItemClickEnabled="True" ItemClick="ItemView_ItemClick" ItemsSource="{Binding}">
+        <local:MyGridView x:Name="DynamicGrid" Margin="10,10,10,10" IsItemClickEnabled="True" SelectionChanged="Item_Deselected" ItemClick="ItemView_ItemClick" ItemsSource="{Binding}" AllowDrop="True" CanDragItems="True" Grid.Row="2">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VariableSizedWrapGrid ItemHeight="100" ItemWidth="150" />
@@ -50,7 +50,7 @@
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="300" Width="300">
+                    <Grid Height="300" Width="300" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
                         <Grid.Background>
                             <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" />
                         </Grid.Background>
@@ -67,20 +67,50 @@
             </GridView.ItemTemplate>
         </local:MyGridView>
 
-        <Grid Grid.Row="2" Margin="0,0,0,5">
-            <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed" Margin="0,408,0,-214"/>
-            <Border Padding="116,0,40,46" Margin="0,408,686,-220">
-                <StackPanel Orientation="Vertical" Margin="-36,28,36,-46" Height="175" VerticalAlignment="Top" >
-                    <TextBlock Text="Text to speech:" Style="{StaticResource ItemTextStyle}" Margin="5"></TextBlock>
-                    <TextBox x:Name="SpeechText" Margin="5" Height="76" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" RenderTransformOrigin="0.5,0.5"/>
-                    <StackPanel Margin="0,0,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button Content="Speak" x:Name="SpeakButton" Click="SpeakButton_Click" Margin="10" Width="153"/>
+        <Grid Margin="10,0,10,10" Grid.Row="3">
+            <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed" Margin="-10,10,10,0"/>
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="-10,10,10,0">
+                <Border Padding="116,0,40,46" Height="169" VerticalAlignment="Top" Margin="10,10,10,0" Width="1335" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Vertical" Margin="-106,10,-40,-36" Height="149" VerticalAlignment="Top" >
+                        <TextBlock Text="Text to speech:" Style="{StaticResource ItemTextStyle}" Margin="10,5,5,5"/>
+                        <TextBox x:Name="SpeechText" Margin="10,5,5,5" Height="49" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" RenderTransformOrigin="0.5,0.5"/>
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="10,0">
+                            <Border Width="1318">
+                                <Grid Margin="10,0">
+                                    <ComboBox x:Name="ColorChoices" Height="40" Padding="8,0" Margin="0,10,987,9" >
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Width="35" Height="20" Fill="{Binding Name}" Margin="5,0"/>
+                                                    <TextBlock Grid.Column="1" Margin="10,0,0,0" Text="{Binding Name}" Foreground="Black"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Content="Create Button" HorizontalAlignment="Center" x:Name="SpeakButton" Click="AddButton_Click" VerticalAlignment="Center" Height="59" Width="164" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5,20"/>
-                </StackPanel>
-            </Border>
+                </Border>
+            </StackPanel>
         </Grid>
-        <Button Content="Add" x:Name="AddButton" Click="AddButton_Click" HorizontalAlignment="Left" Margin="1259,118,0,0" Grid.Row="3" VerticalAlignment="Top" Height="85" Width="97"/>
+        <AppBar x:Name="AppBar" Grid.Row="3">
+            <Grid HorizontalAlignment="Left" Width="1356" Margin="0,110,-10,0">
+                <Grid.ColumnDefinitions>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Background>
+                        <SolidColorBrush Color="Black" />
+                    </StackPanel.Background>
+                    <Button x:Name="DeleteButton" Click="DeleteButton_Click" Style="{StaticResource DeleteAppBarButtonStyle}"/>
+                </StackPanel>
+            </Grid>
+        </AppBar>
 
         <VisualStateManager.VisualStateGroups>
 

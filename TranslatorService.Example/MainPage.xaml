@@ -16,6 +16,17 @@
         <!-- TODO: Delete this line if the key AppName is declared in App.xaml -->
         <x:String x:Key="AppName">Translator Service Example</x:String>
         <local:StringToColorConverter x:Key="ColorConverter"/>
+
+        <Style x:Key="LargerAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="LargerAppBarButtonStyle"/>
+            <Setter Property="AutomationProperties.Name" Value="Larger"/>
+            <Setter Property="Content" Value="&#xE140;"/>
+        </Style>
+        <Style x:Key="SmallerAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="SmallerAppBarButtonStyle"/>
+            <Setter Property="AutomationProperties.Name" Value="Smaller"/>
+            <Setter Property="Content" Value="&#xE13F;"/>
+        </Style>
     </Page.Resources>
 
     <!--
@@ -99,19 +110,7 @@
                 </Border>
             </StackPanel>
         </Grid>
-        <AppBar x:Name="AppBar" Grid.Row="3">
-            <Grid HorizontalAlignment="Left" Width="1356" Margin="0,110,-10,0">
-                <Grid.ColumnDefinitions>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel.Background>
-                        <SolidColorBrush Color="Black" />
-                    </StackPanel.Background>
-                    <Button x:Name="DeleteButton" Click="DeleteButton_Click" Style="{StaticResource DeleteAppBarButtonStyle}"/>
-                </StackPanel>
-            </Grid>
-        </AppBar>
-
+        
         <VisualStateManager.VisualStateGroups>
 
             <!-- Visual states reflect the application's view state -->
@@ -142,4 +141,20 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
+    <Page.BottomAppBar>
+        <AppBar Loaded="AppBar_Loaded" Unloaded="AppBar_Unloaded">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="DeleteButton" Click="DeleteButton_Click" Visibility="Collapsed" Style="{StaticResource DeleteAppBarButtonStyle}"/>
+                <Button x:Name="EnlargeButton" Click="EnlargeButton_Click" Visibility="Collapsed" Style="{StaticResource LargerAppBarButtonStyle}"/>
+                <Button x:Name="ShrinkButton" Click="ShrinkButton_Click" Visibility="Collapsed" Style="{StaticResource SmallerAppBarButtonStyle}"/>
+            </StackPanel>
+        </AppBar>
+    </Page.BottomAppBar>
+    <Page.TopAppBar>
+        <AppBar>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="AddButton" Click="AddButton_Click" Style="{StaticResource AddAppBarButtonStyle}"/>
+            </StackPanel>
+        </AppBar>
+    </Page.TopAppBar>
 </common:LayoutAwarePage>

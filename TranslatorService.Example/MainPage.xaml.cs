@@ -77,16 +77,6 @@ namespace TranslatorService.Example
             this.DataContext = db.Table<Button>().ToList();
         }
 
-        private int ColSpan(int i)
-        {
-            return 1;
-        }
-
-        private int RowSpan(int i)
-        {
-            return 1;
-        }
-
         /// <summary>
         /// Populates the page with content passed during navigation.  Any saved state is also
         /// provided when recreating a page from a prior session.
@@ -169,7 +159,7 @@ namespace TranslatorService.Example
             /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
             {
-                db.Insert(new Button { Text = SpeechText.Text, ColSpan = ColSpan(1), RowSpan = RowSpan(1), Order = 0, ColorHex = selection.ToString() });
+                db.Insert(new Button { Text = SpeechText.Text, ColSpan = 1, RowSpan = 1, Order = 0, ColorHex = selection.ToString() });
                 this.DataContext = db.Table<Button>().ToList();
             }
 
@@ -179,7 +169,7 @@ namespace TranslatorService.Example
 
         private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            AppBar.IsOpen = true;
+            this.BottomAppBar.IsOpen = true;
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -188,7 +178,60 @@ namespace TranslatorService.Example
             {
                 db.Delete(DynamicGrid.SelectedItem);
                 this.DataContext = db.Table<Button>().ToList();
-                AppBar.IsOpen = false;
+                this.BottomAppBar.IsOpen = false;
+            }
+        }
+
+        private void EnlargeButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            {
+                Button b = (Button)DynamicGrid.SelectedItem;
+
+                if (b.ColSpan == 1 && b.RowSpan == 1)
+                {
+                    b.ColSpan = 2;
+                    db.Update(b);
+                    this.DataContext = db.Table<Button>().ToList();
+                }
+                else if (b.ColSpan == 2 && b.RowSpan == 1)
+                {
+                    b.RowSpan = 2;
+                    db.Update(b);
+                    this.DataContext = db.Table<Button>().ToList();
+                }
+                else if (b.ColSpan == 2 && b.RowSpan == 2)
+                {
+                    /* Maximum size */
+                }
+
+                this.BottomAppBar.IsOpen = false;
+            }
+        }
+
+        private void ShrinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            {
+                Button b = (Button)DynamicGrid.SelectedItem;
+                if (b.ColSpan == 1 && b.RowSpan == 1)
+                {
+                    /* Minimum size */
+                }
+                else if (b.ColSpan == 2 && b.RowSpan == 1)
+                {
+                    b.ColSpan = 1;
+                    db.Update(b);
+                    this.DataContext = db.Table<Button>().ToList();
+                }
+                else if (b.ColSpan == 2 && b.RowSpan == 2)
+                {
+                    b.RowSpan = 1;
+                    db.Update(b);
+                    this.DataContext = db.Table<Button>().ToList();
+                }
+
+                this.BottomAppBar.IsOpen = false;
             }
         }
 
@@ -196,8 +239,55 @@ namespace TranslatorService.Example
         {
             if (DynamicGrid.SelectedItem == null)
             {
-                AppBar.IsOpen = false;
+                this.BottomAppBar.IsOpen = false;
             }
+        }
+
+        private void AppBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            Button selection = (Button) DynamicGrid.SelectedItem;
+            if (selection != null)
+            {
+                DeleteButton.Visibility = Visibility.Visible;
+
+                if (selection.RowSpan != 2)
+                    EnlargeButton.Visibility = Visibility.Visible;
+
+                if (selection.ColSpan != 1)
+                    ShrinkButton.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void AppBar_Unloaded(object sender, RoutedEventArgs e)
+        {
+            EnlargeButton.Visibility = Visibility.Collapsed;
+            ShrinkButton.Visibility = Visibility.Collapsed;
+            DeleteButton.Visibility = Visibility.Collapsed;
+        }
+
+        private void DynamicGrid_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            var item = e.Items.FirstOrDefault();
+            if (item == null)
+                return;
+
+            e.Data.Properties.Add("item", item);
+            e.Data.Properties.Add("gridSource", sender);
+        }
+
+        private void DynamicGrid_Drop(object sender, DragEventArgs e)
+        {
+            object gridSource;
+            e.Data.Properties.TryGetValue("gridSource", out gridSource);
+
+            if (gridSource == sender)
+                return;
+
+            object sourceItem;
+            e.Data.Properties.TryGetValue("item", out sourceItem);
+            if (sourceItem == null)
+                return;
+
         }
     }
 

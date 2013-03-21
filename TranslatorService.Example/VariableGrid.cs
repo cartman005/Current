@@ -20,6 +20,7 @@ namespace TranslatorService.Example
             }
             catch
             {
+                System.Diagnostics.Debug.WriteLine("Caught exception");
                 element.SetValue(Windows.UI.Xaml.Controls.VariableSizedWrapGrid.ColumnSpanProperty, 1);
                 element.SetValue(Windows.UI.Xaml.Controls.VariableSizedWrapGrid.RowSpanProperty, 1);
             }

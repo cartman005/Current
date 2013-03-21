@@ -18,6 +18,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Reflection;
 using SQLite;
+using Windows.UI.ApplicationSettings;
+using Windows.ApplicationModel.Resources;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -31,10 +33,12 @@ namespace TranslatorService.Example
         private const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
 
         private SpeechSynthesizer speech;
+        private Popup settingsPopup;
 
         public MainPage()
         {
             this.InitializeComponent();
+            SettingsPane.GetForCurrentView().CommandsRequested += OnSettingsPaneRequested;
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
@@ -56,23 +60,6 @@ namespace TranslatorService.Example
             }
             ColorChoices.DataContext = colorChoices;
 
-            /* Get and insert sample buttons from system colors */
-            /*var _Colors = typeof(Colors)
-                .GetRuntimeProperties()
-                .Select((x, i) => new
-                {
-                    Color = (Color)x.GetValue(null),
-                    Name = x.Name,
-                    Index = i,
-                    ColSpan = 1,
-                    RowSpan = 1
-                });
-
-            foreach (var c in _Colors)
-            {
-                db.Insert(new Button { Text = c.Name, ColSpan = c.ColSpan, RowSpan = c.RowSpan, Order = c.Index, ColorHex = c.Color.ToString() });
-            } */
-            
             /* Set data context to Button table */
             this.DataContext = db.Table<Button>().ToList();
         }
@@ -165,6 +152,7 @@ namespace TranslatorService.Example
 
             /* Clear textbox */
             SpeechText.Text = "";
+            ColorChoices.ClearValue();
         }
 
         private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -245,7 +233,7 @@ namespace TranslatorService.Example
 
         private void AppBar_Loaded(object sender, RoutedEventArgs e)
         {
-            Button selection = (Button) DynamicGrid.SelectedItem;
+            Button selection = (Button)DynamicGrid.SelectedItem;
             if (selection != null)
             {
                 DeleteButton.Visibility = Visibility.Visible;
@@ -265,29 +253,38 @@ namespace TranslatorService.Example
             DeleteButton.Visibility = Visibility.Collapsed;
         }
 
-        private void DynamicGrid_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        void OnSettingsPaneRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            var item = e.Items.FirstOrDefault();
-            if (item == null)
-                return;
+            SettingsCommand cmd = new SettingsCommand("voiceOptions",
+                   "Voice Options", (x) =>
+                   {
+                       settingsPopup = new Popup();
+                       settingsPopup.Closed += OnPopupClosed;
+                       Window.Current.Activated += OnWindowActivated;
+                       settingsPopup.IsLightDismissEnabled = true;
+                       SimpleSettingsNarrow mypane = new SimpleSettingsNarrow();
+                       mypane.Width = 100;
+                       mypane.Height = 150;
 
-            e.Data.Properties.Add("item", item);
-            e.Data.Properties.Add("gridSource", sender);
+                       settingsPopup.Child = mypane;
+                       settingsPopup.Width = 100;
+                       settingsPopup.Height = 150;
+                       settingsPopup.IsOpen = true;
+                   });
+            args.Request.ApplicationCommands.Add(cmd);
         }
 
-        private void DynamicGrid_Drop(object sender, DragEventArgs e)
+        void OnPopupClosed(object sender, object e)
         {
-            object gridSource;
-            e.Data.Properties.TryGetValue("gridSource", out gridSource);
+            Window.Current.Activated -= OnWindowActivated;
+        }
 
-            if (gridSource == sender)
-                return;
-
-            object sourceItem;
-            e.Data.Properties.TryGetValue("item", out sourceItem);
-            if (sourceItem == null)
-                return;
-
+        void OnWindowActivated(object sender, Windows.UI.Core.WindowActivatedEventArgs e)
+        {
+            if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
+            {
+                settingsPopup.IsOpen = false;
+            }
         }
     }
 
@@ -296,7 +293,7 @@ namespace TranslatorService.Example
     {
         public object Convert(object value, Type targetType, object parameter, String language)
         {
-            return ColorHelper.GetColorFromHexa((String) value);
+            return ColorHelper.GetColorFromHexa((String)value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, String language)

@@ -152,7 +152,7 @@ namespace TranslatorService.Example
 
             /* Clear textbox */
             SpeechText.Text = "";
-            ColorChoices.ClearValue();
+            ColorChoices.SelectedIndex = -1;
         }
 
         private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)

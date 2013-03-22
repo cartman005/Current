@@ -14,7 +14,7 @@
     <Page.Resources>
 
         <!-- TODO: Delete this line if the key AppName is declared in App.xaml -->
-        <x:String x:Key="AppName">Translator Service Example</x:String>
+        <x:String x:Key="AppName">UB Talker</x:String>
         <local:StringToColorConverter x:Key="ColorConverter"/>
 
         <Style x:Key="LargerAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
@@ -70,7 +70,7 @@
                                 <SolidColorBrush Color="Black" Opacity=".75" />
                             </StackPanel.Background>
                             <TextBlock FontSize="15" Margin="10">
-                                <Run Text="{Binding Order}" />. <Run Text="{Binding Text}"/>
+                                <Run Text="{Binding Text}"/>
                             </TextBlock>
                         </StackPanel>
                     </Grid>

@@ -49,7 +49,7 @@ namespace TranslatorService.Example
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
-            speech.AudioFormat = SpeakStreamFormat.MP3;
+            speech.AudioFormat = SpeakStreamFormat.Wave;
             speech.AudioQuality = SpeakStreamQuality.MaxQuality;
             speech.AutoDetectLanguage = false;
             speech.AutomaticTranslation = false;
@@ -174,6 +174,8 @@ namespace TranslatorService.Example
             System.Diagnostics.Debug.WriteLine("Storing " + text + " to file");
             var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync(
                             fileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+
+            System.Diagnostics.Debug.WriteLine(file.Path);
             await Windows.Storage.FileIO.WriteBytesAsync(file, buffer);
             Data[index].FileName = fileName;
             SaveData(Data);
@@ -181,7 +183,7 @@ namespace TranslatorService.Example
 
         private string FindFilename(int index, string text)
         {
-            return index + "_" + StringExt.Truncate(text, 20) + ".mp3";
+            return index + "_" + StringExt.Truncate(text, 20) + ".wav";
         }
 
         private async void DeleteFile(string fileName)

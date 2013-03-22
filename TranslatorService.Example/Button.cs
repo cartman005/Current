@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI;
 
 namespace TranslatorService.Example
 {
@@ -11,7 +12,6 @@ namespace TranslatorService.Example
      */
     public class Button
     {
-        [SQLite.AutoIncrement, SQLite.PrimaryKey]
         public int ID { get; set; }
 
         /* Order on the page */
@@ -24,10 +24,9 @@ namespace TranslatorService.Example
         public int RowSpan { get; set; }
 
         /* Text on the button */
-        [SQLite.MaxLength(50)]
         public string Text { get; set; }
 
         /* Hexadecimal value of the button's color */
-        public string ColorHex { get; set; }
+        public Color Color { get; set; }
     }
 }

@@ -63,7 +63,7 @@
                 <DataTemplate>
                     <Grid Height="300" Width="300" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
                         <Grid.Background>
-                            <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" />
+                            <SolidColorBrush Color="{Binding Color}" />
                         </Grid.Background>
                         <StackPanel VerticalAlignment="Top">
                             <StackPanel.Background>

@@ -17,9 +17,11 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Reflection;
-using SQLite;
 using Windows.UI.ApplicationSettings;
 using Windows.ApplicationModel.Resources;
+using System.Collections.ObjectModel;
+using TCD.Serialization.Xml;
+using System.Threading.Tasks;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -29,16 +31,20 @@ namespace TranslatorService.Example
     // A basic page that provides characteristics common to most applications.
     public sealed partial class MainPage : TranslatorService.Example.Common.LayoutAwarePage
     {
+        private const string DATA_FILE = "ButtonsDef";
         private const string CLIENT_ID = "UBTalker2013";
         private const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
 
         private SpeechSynthesizer speech;
         private Popup settingsPopup;
 
+        public ObservableCollection<Button> Data { get; set; }
+
         public MainPage()
         {
             this.InitializeComponent();
             SettingsPane.GetForCurrentView().CommandsRequested += OnSettingsPaneRequested;
+            Data = new ObservableCollection<Button>();
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
@@ -46,10 +52,6 @@ namespace TranslatorService.Example
             speech.AudioQuality = SpeakStreamQuality.MaxQuality;
             speech.AutoDetectLanguage = false;
             speech.AutomaticTranslation = false;
-
-            /* Database transactions */
-            var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite"));
-            db.CreateTable<Button>();
 
             /* Set up combobox */
             // Source: http://social.msdn.microsoft.com/Forums/en-US/winappswithcsharp/thread/1cb9c5b9-3ef6-4c88-b747-ae222c38c922/
@@ -61,7 +63,55 @@ namespace TranslatorService.Example
             ColorChoices.DataContext = colorChoices;
 
             /* Set data context to Button table */
-            this.DataContext = db.Table<Button>().ToList();
+            LoadData();
+            this.DataContext = Data;
+        }
+
+        public async void LoadData()
+        {
+            var result = await GetData();
+
+            if (result == null)
+                return;
+
+            foreach (var item in result)
+            {
+                Data.Add(item);
+            }
+        }
+
+        public static async void SaveData(ObservableCollection<Button> data)
+        {
+            StorageFolder storageFolder = ApplicationData.Current.RoamingFolder;
+            var file = await storageFolder.CreateFileAsync(DATA_FILE, CreationCollisionOption.ReplaceExisting);
+            try
+            {
+                // serial data object to XML file specified in "DATA_FILE"
+                XmlDeSerializer.SerializeToStream(await file.OpenStreamForWriteAsync(), data);
+            }
+            catch (Exception ex)
+            {
+                // handle any kind of exceptions
+            }
+        }
+
+        public static async Task<ObservableCollection<Button>> GetData()
+        {
+            StorageFolder storageFolder = ApplicationData.Current.RoamingFolder;
+            var file = await storageFolder.CreateFileAsync(DATA_FILE, CreationCollisionOption.OpenIfExists);
+            try
+            {
+                // deserialize the collection object from "DATA_FILE" specified
+                return XmlDeSerializer.DeserializeFromStream(await file.OpenStreamForReadAsync(), 
+                                                     typeof(ObservableCollection<Button>)) 
+                                                     as ObservableCollection<Button>;
+            }
+            catch (Exception ex)
+            {
+               // handle any kind of exception
+            }
+ 
+            return null;
         }
 
         /// <summary>
@@ -120,12 +170,6 @@ namespace TranslatorService.Example
             Speak_String(_Item.Text);
         }
 
-        private async void CreateDatabase()
-        {
-            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("button");
-            await conn.CreateTableAsync<Button>();
-        }
-
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
             /* Speak string */
@@ -144,11 +188,8 @@ namespace TranslatorService.Example
                 selection = Colors.Black;
 
             /* Add button to database */
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
-            {
-                db.Insert(new Button { Text = SpeechText.Text, ColSpan = 1, RowSpan = 1, Order = 0, ColorHex = selection.ToString() });
-                this.DataContext = db.Table<Button>().ToList();
-            }
+            Data.Add(new Button { Text = SpeechText.Text, ColSpan = 1, RowSpan = 1, Order = 0, Color = selection });
+            SaveData(Data);
 
             /* Clear textbox */
             SpeechText.Text = "";
@@ -162,65 +203,57 @@ namespace TranslatorService.Example
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
-            {
-                db.Delete(DynamicGrid.SelectedItem);
-                this.DataContext = db.Table<Button>().ToList();
-                this.BottomAppBar.IsOpen = false;
-            }
+            Data.Remove((Button)DynamicGrid.SelectedItem);
+            this.BottomAppBar.IsOpen = false;
+            SaveData(Data);
         }
 
         private void EnlargeButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            Button b = (Button) DynamicGrid.SelectedItem;
+            int index = Data.IndexOf(b);
+            
+            if (b.ColSpan == 1 && b.RowSpan == 1)
             {
-                Button b = (Button)DynamicGrid.SelectedItem;
-
-                if (b.ColSpan == 1 && b.RowSpan == 1)
-                {
-                    b.ColSpan = 2;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 1)
-                {
-                    b.RowSpan = 2;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 2)
-                {
-                    /* Maximum size */
-                }
-
-                this.BottomAppBar.IsOpen = false;
+                b.ColSpan = 2;
+                Data[index] = b;
             }
+            else if (b.ColSpan == 2 && b.RowSpan == 1)
+            {
+                b.RowSpan = 2;
+                Data[index] = b;
+            }
+            else if (b.ColSpan == 2 && b.RowSpan == 2)
+            {
+                /* Maximum size */
+            }
+            
+            this.BottomAppBar.IsOpen = false;
+            SaveData(Data);
         }
 
         private void ShrinkButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
-            {
-                Button b = (Button)DynamicGrid.SelectedItem;
-                if (b.ColSpan == 1 && b.RowSpan == 1)
-                {
-                    /* Minimum size */
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 1)
-                {
-                    b.ColSpan = 1;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 2)
-                {
-                    b.RowSpan = 1;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
-                }
+            Button b = (Button)DynamicGrid.SelectedItem;
+            int index = Data.IndexOf(b);
 
-                this.BottomAppBar.IsOpen = false;
+            if (b.ColSpan == 1 && b.RowSpan == 1)
+            {
+                /* Minimum size */
             }
+            else if (b.ColSpan == 2 && b.RowSpan == 1)
+            {
+                b.ColSpan = 1;
+                Data[index] = b;
+            }
+            else if (b.ColSpan == 2 && b.RowSpan == 2)
+            {
+                b.RowSpan = 1;
+                Data[index] = b;
+            }
+
+            this.BottomAppBar.IsOpen = false;
+            SaveData(Data);
         }
 
         private void Item_Deselected(object sender, RoutedEventArgs e)

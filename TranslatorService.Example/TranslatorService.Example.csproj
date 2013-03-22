@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{C1E47435-87BE-4402-B67F-F712A716A745}</ProjectGuid>
-    <OutputType>AppContainerExe</OutputType>
+    <OutputType>appcontainerexe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TranslatorService.Example</RootNamespace>
     <AssemblyName>TranslatorService.Example</AssemblyName>
@@ -118,8 +118,6 @@
     <Compile Include="SimpleSettingsNarrow.xaml.cs">
       <DependentUpon>SimpleSettingsNarrow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SQLite.cs" />
-    <Compile Include="SQLiteAsync.cs" />
     <Compile Include="VariableGrid.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -161,15 +159,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <SDKReference Include="Microsoft.VCLibs, version=11.0">
-      <Name>Microsoft Visual C++ Runtime Package</Name>
-    </SDKReference>
-    <SDKReference Include="SQLite.WinRT, Version=3.7.15.2">
-      <Name>SQLite for Windows Runtime</Name>
-    </SDKReference>
+    <Reference Include="TCD.Serialization">
+      <HintPath>..\packages\TCD.Serialization.1.0.3\lib\winrt45\TCD.Serialization.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

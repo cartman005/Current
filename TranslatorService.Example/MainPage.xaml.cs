@@ -22,6 +22,7 @@ using Windows.ApplicationModel.Resources;
 using System.Collections.ObjectModel;
 using TCD.Serialization.Xml;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -55,12 +56,18 @@ namespace TranslatorService.Example
 
             /* Set up combobox */
             // Source: http://social.msdn.microsoft.com/Forums/en-US/winappswithcsharp/thread/1cb9c5b9-3ef6-4c88-b747-ae222c38c922/
-            var colorChoices = typeof(Colors).GetTypeInfo().DeclaredProperties;
-            foreach (var item in colorChoices)
-            {
-                ColorChoices.Items.Add(item);
-            }
-            ColorChoices.DataContext = colorChoices;
+
+            ColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
+            ColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
+            ColorChoices.SelectedIndex = 0;
+
 
             /* Set data context to Button table */
             LoadData();
@@ -83,9 +90,10 @@ namespace TranslatorService.Example
         public static async void SaveData(ObservableCollection<Button> data)
         {
             StorageFolder storageFolder = ApplicationData.Current.RoamingFolder;
-            var file = await storageFolder.CreateFileAsync(DATA_FILE, CreationCollisionOption.ReplaceExisting);
+           
             try
             {
+                var file = await storageFolder.CreateFileAsync(DATA_FILE, CreationCollisionOption.ReplaceExisting);
                 // serial data object to XML file specified in "DATA_FILE"
                 XmlDeSerializer.SerializeToStream(await file.OpenStreamForWriteAsync(), data);
             }
@@ -143,7 +151,7 @@ namespace TranslatorService.Example
         {
         }
 
-        private async void Speak_String(string text)
+        private async void Store_String(string text, int index)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
@@ -154,6 +162,72 @@ namespace TranslatorService.Example
             SpeechMediaElement.SetSource(stream, speech.MimeContentType);
 
             WaitProgressBar.Visibility = Visibility.Collapsed;
+
+            IInputStream inputStream = stream.GetInputStreamAt(0);
+            DataReader dataReader = new DataReader(inputStream);
+            await dataReader.LoadAsync((uint)stream.Size);
+            byte[] buffer = new byte[(int)stream.Size];
+            dataReader.ReadBytes(buffer);
+
+            String fileName = FindFilename(index, text);
+
+            System.Diagnostics.Debug.WriteLine("Storing " + text + " to file");
+            var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync(
+                            fileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            await Windows.Storage.FileIO.WriteBytesAsync(file, buffer);
+            Data[index].FileName = fileName;
+            SaveData(Data);
+        }
+
+        private string FindFilename(int index, string text)
+        {
+            return index + "_" + StringExt.Truncate(text, 20) + ".mp3";
+        }
+
+        private async void DeleteFile(string fileName)
+        {
+            try
+            {
+                StorageFile file = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(fileName);
+
+                if (file != null)
+                {
+                    await file.DeleteAsync();
+                }
+            }
+            catch (Exception ex)
+            { }
+        }
+
+        private async void Speak_String(int index)
+        {
+            WaitProgressBar.Visibility = Visibility.Visible;
+
+            try
+            {
+                var myAudio = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(Data[index].FileName);
+                System.Diagnostics.Debug.WriteLine("Playing " + Data[index].Text + " from memory");
+                MediaElement mediaElement = new MediaElement();
+
+                var stream = await myAudio.OpenAsync(FileAccessMode.Read);
+                mediaElement.SetSource(stream, myAudio.ContentType);
+                mediaElement.Play();
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentNullException || ex is FileNotFoundException)
+                {
+                    WaitProgressBar.Visibility = Visibility.Collapsed;
+                    Store_String(Data[index].Text, index);
+                    WaitProgressBar.Visibility = Visibility.Visible;
+                }
+                else
+                    throw;
+            }
+            finally
+            {
+                WaitProgressBar.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -167,7 +241,7 @@ namespace TranslatorService.Example
             // Navigate to the appropriate destination page, configuring the new page
             // by passing required information as a navigation parameter
             dynamic _Item = e.ClickedItem;
-            Speak_String(_Item.Text);
+            Speak_String(Data.IndexOf(_Item));
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -175,25 +249,25 @@ namespace TranslatorService.Example
             /* Speak string */
             if (string.IsNullOrWhiteSpace(SpeechText.Text))
                 return;
-            Speak_String(SpeechText.Text);
 
             Color selection;
             /* Get selected color */
             if (ColorChoices.SelectedIndex != -1)
             {
-                var pi = ColorChoices.SelectedItem as PropertyInfo;
-                selection = (Color)pi.GetValue(null);
+                var pi = ColorChoices.SelectedItem as ColorChoice;
+                selection = pi.Color;
             }
             else
                 selection = Colors.Black;
 
             /* Add button to database */
-            Data.Add(new Button { Text = SpeechText.Text, ColSpan = 1, RowSpan = 1, Order = 0, Color = selection });
-            SaveData(Data);
+            Button b = new Button { Text = SpeechText.Text, ColSpan = 1, RowSpan = 1, Order = 0, Color = selection };
+            Data.Add(b);
+
+            Store_String(SpeechText.Text, Data.IndexOf(b));
 
             /* Clear textbox */
             SpeechText.Text = "";
-            ColorChoices.SelectedIndex = -1;
         }
 
         private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -203,9 +277,12 @@ namespace TranslatorService.Example
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            Data.Remove((Button)DynamicGrid.SelectedItem);
+            Button b = (Button) DynamicGrid.SelectedItem;
+            Data.Remove(b);
             this.BottomAppBar.IsOpen = false;
             SaveData(Data);
+            if (b.FileName != null)
+                DeleteFile(b.FileName);
         }
 
         private void EnlargeButton_Click(object sender, RoutedEventArgs e)
@@ -348,4 +425,19 @@ namespace TranslatorService.Example
             );
         }
     }
+
+    public static class StringExt
+    {
+        public static string Truncate(this string value, int maxLength)
+        {
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+        }
+    }
+
+    public class ColorChoice
+    {
+        public string Name { get; set; }
+        public Color Color { get; set; }
+    }
+
 }

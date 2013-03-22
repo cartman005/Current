@@ -28,5 +28,7 @@ namespace TranslatorService.Example
 
         /* Hexadecimal value of the button's color */
         public Color Color { get; set; }
+
+        public string FileName { get; set; }
     }
 }

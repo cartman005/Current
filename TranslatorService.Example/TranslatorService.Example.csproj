@@ -114,6 +114,9 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NewButtonPage.xaml.cs">
+      <DependentUpon>NewButtonPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleSettingsNarrow.xaml.cs">
       <DependentUpon>SimpleSettingsNarrow.xaml</DependentUpon>
@@ -133,6 +136,10 @@
     <Content Include="Assets\SplashScreen.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Common\ReadMe.txt" />
+    <Page Include="NewButtonPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="SimpleSettingsNarrow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

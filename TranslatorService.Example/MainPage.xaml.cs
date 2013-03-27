@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using TCD.Serialization.Xml;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
+using Windows.UI.Xaml.Media.Imaging;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -53,20 +54,6 @@ namespace TranslatorService.Example
             speech.AudioQuality = SpeakStreamQuality.MaxQuality;
             speech.AutoDetectLanguage = false;
             speech.AutomaticTranslation = false;
-
-            /* Set up combobox */
-            // Source: http://social.msdn.microsoft.com/Forums/en-US/winappswithcsharp/thread/1cb9c5b9-3ef6-4c88-b747-ae222c38c922/
-
-            ColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
-            ColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
-            ColorChoices.SelectedIndex = 0;
 
 
             /* Set data context to Button table */
@@ -141,6 +128,21 @@ namespace TranslatorService.Example
             }
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            var b = e.Parameter as Button;
+
+            if (b != null)
+            {
+                WaitProgressBar.Visibility = Visibility.Visible;
+                Data.Add(b);
+                Store_String(b.Text, Data.IndexOf(b));
+                WaitProgressBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
         /// page is discarded from the navigation cache.  Values must conform to the serialization
@@ -181,7 +183,7 @@ namespace TranslatorService.Example
             SaveData(Data);
         }
 
-        private string FindFilename(int index, string text)
+        public static string FindFilename(int index, string text)
         {
             return index + "_" + StringExt.Truncate(text, 20) + ".wav";
         }
@@ -248,28 +250,7 @@ namespace TranslatorService.Example
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            /* Speak string */
-            if (string.IsNullOrWhiteSpace(SpeechText.Text))
-                return;
-
-            Color selection;
-            /* Get selected color */
-            if (ColorChoices.SelectedIndex != -1)
-            {
-                var pi = ColorChoices.SelectedItem as ColorChoice;
-                selection = pi.Color;
-            }
-            else
-                selection = Colors.Black;
-
-            /* Add button to database */
-            Button b = new Button { Text = SpeechText.Text, ColSpan = 1, RowSpan = 1, Order = 0, Color = selection };
-            Data.Add(b);
-
-            Store_String(SpeechText.Text, Data.IndexOf(b));
-
-            /* Clear textbox */
-            SpeechText.Text = "";
+            Frame.Navigate(typeof(NewButtonPage));
         }
 
         private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -400,34 +381,6 @@ namespace TranslatorService.Example
         }
     }
 
-    /* XAML helper class to convert a hexadecimal color value to a color */
-    public class StringToColorConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, String language)
-        {
-            return ColorHelper.GetColorFromHexa((String)value);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, String language)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    /* Get the color value from the hexadecimal string */
-    public static class ColorHelper
-    {
-        public static Color GetColorFromHexa(string hexaColor)
-        {
-            return Color.FromArgb(
-                    Convert.ToByte(hexaColor.Substring(1, 2), 16),
-                    Convert.ToByte(hexaColor.Substring(3, 2), 16),
-                    Convert.ToByte(hexaColor.Substring(5, 2), 16),
-                    Convert.ToByte(hexaColor.Substring(7, 2), 16)
-            );
-        }
-    }
-
     public static class StringExt
     {
         public static string Truncate(this string value, int maxLength)
@@ -435,11 +388,4 @@ namespace TranslatorService.Example
             return value.Length <= maxLength ? value : value.Substring(0, maxLength);
         }
     }
-
-    public class ColorChoice
-    {
-        public string Name { get; set; }
-        public Color Color { get; set; }
-    }
-
 }

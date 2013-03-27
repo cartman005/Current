@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace TranslatorService.Example
 {
@@ -23,11 +24,18 @@ namespace TranslatorService.Example
         /* Vertical height */
         public int RowSpan { get; set; }
 
-        /* Text on the button */
+        /* Text on button */
+        public string Name { get; set; }
+
+        public BitmapImage ImagePath { get; set; }
+
+        /* Text to be spoken */
         public string Text { get; set; }
 
         /* Hexadecimal value of the button's color */
         public Color Color { get; set; }
+
+        public string Description { get; set; }
 
         public string FileName { get; set; }
     }

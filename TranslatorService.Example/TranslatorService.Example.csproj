@@ -121,6 +121,8 @@
     <Compile Include="SimpleSettingsNarrow.xaml.cs">
       <DependentUpon>SimpleSettingsNarrow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SQLite.cs" />
+    <Compile Include="SQLiteAsync.cs" />
     <Compile Include="VariableGrid.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -166,9 +168,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="TCD.Serialization">
-      <HintPath>..\packages\TCD.Serialization.1.0.3\lib\winrt45\TCD.Serialization.dll</HintPath>
-    </Reference>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs, version=11.0">
+      <Name>Microsoft Visual C++ Runtime Package</Name>
+    </SDKReference>
+    <SDKReference Include="SQLite.WinRT, Version=3.7.16">
+      <Name>SQLite for Windows Runtime</Name>
+    </SDKReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>

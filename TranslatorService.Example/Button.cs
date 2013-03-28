@@ -13,6 +13,7 @@ namespace TranslatorService.Example
      */
     public class Button
     {
+        [SQLite.AutoIncrement, SQLite.PrimaryKey]
         public int ID { get; set; }
 
         /* Order on the page */
@@ -27,13 +28,13 @@ namespace TranslatorService.Example
         /* Text on button */
         public string Name { get; set; }
 
-        public BitmapImage ImagePath { get; set; }
+        public string ImagePath { get; set; }
 
         /* Text to be spoken */
         public string Text { get; set; }
 
         /* Hexadecimal value of the button's color */
-        public Color Color { get; set; }
+        public string ColorHex { get; set; }
 
         public string Description { get; set; }
 

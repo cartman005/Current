@@ -65,7 +65,7 @@
                 <DataTemplate>
                     <Grid Height="300" Width="300" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
                         <Grid.Background>
-                            <ImageBrush ImageSource="{Binding ImagePath}" Stretch="UniformToFill" />
+                            <SolidColorBrush Color="{Binding Color}" />
                         </Grid.Background>
                         <StackPanel VerticalAlignment="Top">
                             <StackPanel.Background>

@@ -1,10 +1,10 @@
-﻿using System;
+﻿using SQLite;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TCD.Serialization.Xml;
 using TranslatorService.Speech;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -30,8 +30,6 @@ namespace TranslatorService.Example
     /// </summary>
     public sealed partial class NewButtonPage : TranslatorService.Example.Common.LayoutAwarePage
     {
-        BitmapImage image;
-
         public NewButtonPage()
         {            
 
@@ -88,11 +86,9 @@ namespace TranslatorService.Example
             var file = await picker.PickSingleFileAsync();
             if (file == null) return;
 
-            ButtonImageEntry.Text = file.Path;
+            await file.CopyAsync(ApplicationData.Current.LocalFolder, file.Name);
 
-            var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-            image = new BitmapImage();
-            image.SetSource(stream);
+            ButtonImageEntry.Text = file.Name;
         }
 
         private void CreateButton(object sender, RoutedEventArgs e)
@@ -115,10 +111,14 @@ namespace TranslatorService.Example
                 selection = Colors.Black;
 
             /* Add button to database */
-            Button b = new Button { Name = ButtonNameEntry.Text, Description = ButtonDescEntry.Text,
-                        Text = ButtonTextEntry.Text, ColSpan = 1, RowSpan = 1, ImagePath = image, Order = 0, Color = selection };
+            using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            {
+                db.Insert(new Button { Name = ButtonNameEntry.Text, Description = ButtonDescEntry.Text,
+                        Text = ButtonTextEntry.Text, ColSpan = 1, RowSpan = 1,
+                        ImagePath = ButtonImageEntry.Text, Order = 0, ColorHex = selection.ToString() });
+            }
 
-            this.Frame.Navigate(typeof(MainPage), b);
+            this.Frame.GoBack();
         }
     }
 

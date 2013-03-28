@@ -60,14 +60,13 @@
         <local:MyGridView x:Name="DynamicGrid" Margin="10,10,10,10" IsItemClickEnabled="True" SelectionChanged="Item_Deselected" ItemClick="ItemView_ItemClick" ItemsSource="{Binding}" AllowDrop="True" CanDragItems="True" Grid.Row="2">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VariableSizedWrapGrid ItemHeight="100" ItemWidth="150" />
+                    <VariableSizedWrapGrid ItemHeight="150" ItemWidth="250" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="300" Width="300" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
+                    <Grid Height="450" Width="750" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
                         <Grid.Background>
-                            
                             <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" />
                         </Grid.Background>
                         <StackPanel VerticalAlignment="Top">

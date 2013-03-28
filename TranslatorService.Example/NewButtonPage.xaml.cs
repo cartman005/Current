@@ -31,7 +31,7 @@ namespace TranslatorService.Example
     public sealed partial class NewButtonPage : TranslatorService.Example.Common.LayoutAwarePage
     {
         public NewButtonPage()
-        {            
+        {
 
             this.InitializeComponent();
 
@@ -97,8 +97,10 @@ namespace TranslatorService.Example
             WaitProgressBar.Visibility = Visibility.Visible;
 
             /* Speak string */
-            if (string.IsNullOrWhiteSpace(ButtonTextEntry.Text))
+            if (string.IsNullOrWhiteSpace(ButtonTextEntry.Text) || string.IsNullOrWhiteSpace(ButtonNameEntry.Text)) {
+                WaitProgressBar.Visibility = Visibility.Collapsed;
                 return;
+            }
 
             Color selection;
             /* Get selected color */
@@ -113,9 +115,17 @@ namespace TranslatorService.Example
             /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
             {
-                db.Insert(new Button { Name = ButtonNameEntry.Text, Description = ButtonDescEntry.Text,
-                        Text = ButtonTextEntry.Text, ColSpan = 1, RowSpan = 1,
-                        ImagePath = ButtonImageEntry.Text, Order = 0, ColorHex = selection.ToString() });
+                db.Insert(new Button
+                {
+                    Name = ButtonNameEntry.Text,
+                    Description = ButtonDescEntry.Text,
+                    Text = ButtonTextEntry.Text,
+                    ColSpan = 1,
+                    RowSpan = 1,
+                    ImagePath = ButtonImageEntry.Text,
+                    Order = 0,
+                    ColorHex = selection.ToString()
+                });
             }
 
             this.Frame.GoBack();

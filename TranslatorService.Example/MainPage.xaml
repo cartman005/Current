@@ -15,6 +15,8 @@
 
         <!-- TODO: Delete this line if the key AppName is declared in App.xaml -->
         <x:String x:Key="AppName">UB Talker</x:String>
+        <local:StringToColorConverter x:Key="ColorConverter"/>
+        <local:StringToImageConverter x:Key="ImageConverter"/>
 
         <Style x:Key="LargerAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="LargerAppBarButtonStyle"/>
@@ -50,9 +52,9 @@
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
             <MediaElement x:Name="SpeechMediaElement"></MediaElement>
         </Grid>
-        
+
         <Grid Grid.Row="1" >
-              <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed"/>
+            <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed"/>
         </Grid>
 
         <local:MyGridView x:Name="DynamicGrid" Margin="10,10,10,10" IsItemClickEnabled="True" SelectionChanged="Item_Deselected" ItemClick="ItemView_ItemClick" ItemsSource="{Binding}" AllowDrop="True" CanDragItems="True" Grid.Row="2">
@@ -65,12 +67,13 @@
                 <DataTemplate>
                     <Grid Height="300" Width="300" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
                         <Grid.Background>
-                            <SolidColorBrush Color="{Binding Color}" />
+                            
+                            <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" />
                         </Grid.Background>
                         <StackPanel VerticalAlignment="Top">
                             <StackPanel.Background>
                                 <!--<SolidColorBrush Color="Black" Opacity=".75" />-->
-                                <SolidColorBrush Color="{Binding Color}" />
+                                <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" />
                             </StackPanel.Background>
                             <TextBlock FontSize="15" Margin="10">
                                 <Run Text="{Binding Name}"/>

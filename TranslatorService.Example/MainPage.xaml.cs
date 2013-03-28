@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using TranslatorService.Speech;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -16,13 +17,11 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Reflection;
+using SQLite;
 using Windows.UI.ApplicationSettings;
 using Windows.ApplicationModel.Resources;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
-using SQLite;
+using Windows.Storage.Streams;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -32,14 +31,11 @@ namespace TranslatorService.Example
     // A basic page that provides characteristics common to most applications.
     public sealed partial class MainPage : TranslatorService.Example.Common.LayoutAwarePage
     {
-        private const string DATA_FILE = "ButtonsDef";
         private const string CLIENT_ID = "UBTalker2013";
         private const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
 
         private SpeechSynthesizer speech;
         private Popup settingsPopup;
-        public static SQLiteConnection db;
-        ObservableCollection<MyGridItem> items;
 
         public MainPage()
         {
@@ -48,52 +44,17 @@ namespace TranslatorService.Example
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
-            speech.AudioFormat = SpeakStreamFormat.Wave;
+            speech.AudioFormat = SpeakStreamFormat.MP3;
             speech.AudioQuality = SpeakStreamQuality.MaxQuality;
             speech.AutoDetectLanguage = false;
             speech.AutomaticTranslation = false;
 
             /* Database transactions */
-            db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite"));
+            var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite"));
             db.CreateTable<Button>();
 
-
-            items = new ObservableCollection<MyGridItem>();
             /* Set data context to Button table */
-            foreach (Button b in db.Table<Button>())
-            {
-                BitmapImage source = null;
-                if (b.ImagePath != null)
-                {
-                    source = new BitmapImage();
-                    System.Diagnostics.Debug.WriteLine("Image: " + b.ImagePath);
-                    SetImage(b.ImagePath, source);
-                }
-                
-                items.Add(new MyGridItem
-                {
-                    Name = b.Name,
-                    Color = ColorHelper.GetColorFromHexa(b.ColorHex),
-                    Text = b.Text,
-                    Image = source
-                });
-            }
-            DataContext = items;
-        }
-
-        private async void SetImage(string path, BitmapImage image)
-        {
-            try
-            {
-                BitmapImage source = new BitmapImage();
-                StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(path);
-                var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-
-                image.SetSource(stream);
-            }
-            catch (FileNotFoundException ex)
-            {
-            }
+            this.DataContext = db.Table<Button>().ToList();
         }
 
         /// <summary>
@@ -115,21 +76,6 @@ namespace TranslatorService.Example
             }
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-
-            var b = e.Parameter as Button;
-
-            if (b != null)
-            {
-                WaitProgressBar.Visibility = Visibility.Visible;
-                //Store_String(b.Text, Data.IndexOf(b));
-                WaitProgressBar.Visibility = Visibility.Collapsed;
-            }
-            DataContext = items;
-        }
-
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
         /// page is discarded from the navigation cache.  Values must conform to the serialization
@@ -138,6 +84,44 @@ namespace TranslatorService.Example
         /// <param name="pageState">An empty dictionary to be populated with serializable state.</param>
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
+        }
+
+        public static string FindFilename(int index, string text, string ext)
+        {
+            return index + "_" + StringExt.Truncate(text, 20) + ext;
+        }
+
+
+        private async void Speak_String(string text, string filename, int id)
+        {
+            WaitProgressBar.Visibility = Visibility.Visible;
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine(filename);
+                var myAudio = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(filename);
+                System.Diagnostics.Debug.WriteLine("Playing " + text + " from memory");
+                MediaElement mediaElement = new MediaElement();
+
+                var stream = await myAudio.OpenAsync(FileAccessMode.Read);
+                mediaElement.SetSource(stream, myAudio.ContentType);
+                mediaElement.Play();
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentNullException || ex is FileNotFoundException)
+                {
+                    WaitProgressBar.Visibility = Visibility.Collapsed;
+                    Store_String(text, id);
+                    WaitProgressBar.Visibility = Visibility.Visible;
+                }
+                else
+                    throw;
+            }
+            finally
+            {
+                WaitProgressBar.Visibility = Visibility.Collapsed;
+            }
         }
 
         private async void Store_String(string text, int index)
@@ -166,58 +150,15 @@ namespace TranslatorService.Example
 
             System.Diagnostics.Debug.WriteLine(file.Path);
             await Windows.Storage.FileIO.WriteBytesAsync(file, buffer);
-            
-        }
 
-        public static string FindFilename(int index, string text, string ext)
-        {
-            return index + "_" + StringExt.Truncate(text, 20) + ext;
-        }
-
-        private async void DeleteFile(string fileName)
-        {
-            try
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
             {
-                StorageFile file = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(fileName);
-
-                if (file != null)
-                {
-                    await file.DeleteAsync();
-                }
+                var b = db.Table<Button>().FirstOrDefault(x => x.ID == index);
+                b.FileName = fileName;
+                db.Update(b);
+                this.DataContext = db.Table<Button>().ToList();
             }
-            catch (Exception ex)
-            { }
-        }
 
-        private async void Speak_String(int index)
-        {
-            WaitProgressBar.Visibility = Visibility.Visible;
-
-            try
-            {
-                /*var myAudio = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(Data[index].FileName);
-                System.Diagnostics.Debug.WriteLine("Playing " + Data[index].Text + " from memory");
-                MediaElement mediaElement = new MediaElement();
-
-                var stream = await myAudio.OpenAsync(FileAccessMode.Read);
-                mediaElement.SetSource(stream, myAudio.ContentType);
-                mediaElement.Play();*/
-            }
-            catch (Exception ex)
-            {
-                if (ex is ArgumentNullException || ex is FileNotFoundException)
-                {
-                    WaitProgressBar.Visibility = Visibility.Collapsed;
-                    //Store_String(Data[index].Text, index);
-                    WaitProgressBar.Visibility = Visibility.Visible;
-                }
-                else
-                    throw;
-            }
-            finally
-            {
-                WaitProgressBar.Visibility = Visibility.Collapsed;
-            }
         }
 
         /// <summary>
@@ -230,8 +171,14 @@ namespace TranslatorService.Example
         {
             // Navigate to the appropriate destination page, configuring the new page
             // by passing required information as a navigation parameter
-            dynamic _Item = e.ClickedItem;
-            //Speak_String(Data.IndexOf(_Item));
+            Button _Item = (Button)e.ClickedItem;
+            Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+        }
+
+        private async void CreateDatabase()
+        {
+            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("button");
+            await conn.CreateTableAsync<Button>();
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -244,14 +191,46 @@ namespace TranslatorService.Example
             this.BottomAppBar.IsOpen = true;
         }
 
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            StorageFile file;
+            try
             {
-                db.Delete(DynamicGrid.SelectedItem);
-                this.DataContext = db.Table<Button>();
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync(((Button)DynamicGrid.SelectedItem).ImagePath);
+                await file.DeleteAsync();
             }
-            this.BottomAppBar.IsOpen = false;
+            catch (Exception ex)
+            {
+                if (ex is FileNotFoundException ||
+                    ex is ArgumentNullException)
+                { }
+                else
+                {
+                    throw;
+                }
+            }
+            try
+            {
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync(((Button)DynamicGrid.SelectedItem).FileName);
+                await file.DeleteAsync();
+            }
+            catch (Exception ex)
+            {
+                if (ex is FileNotFoundException ||
+                    ex is ArgumentNullException)
+                { }
+                else
+                {
+                    throw;
+                }
+            }
+
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            {                
+                db.Delete(DynamicGrid.SelectedItem);
+                this.DataContext = db.Table<Button>().ToList();
+                this.BottomAppBar.IsOpen = false;
+            }
         }
 
         private void EnlargeButton_Click(object sender, RoutedEventArgs e)
@@ -264,21 +243,21 @@ namespace TranslatorService.Example
                 {
                     b.ColSpan = 2;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>();
+                    this.DataContext = db.Table<Button>().ToList();
                 }
                 else if (b.ColSpan == 2 && b.RowSpan == 1)
                 {
                     b.RowSpan = 2;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>();
+                    this.DataContext = db.Table<Button>().ToList();
                 }
                 else if (b.ColSpan == 2 && b.RowSpan == 2)
                 {
                     /* Maximum size */
                 }
-            }
 
-            this.BottomAppBar.IsOpen = false;
+                this.BottomAppBar.IsOpen = false;
+            }
         }
 
         private void ShrinkButton_Click(object sender, RoutedEventArgs e)
@@ -294,17 +273,17 @@ namespace TranslatorService.Example
                 {
                     b.ColSpan = 1;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>();
+                    this.DataContext = db.Table<Button>().ToList();
                 }
                 else if (b.ColSpan == 2 && b.RowSpan == 2)
                 {
                     b.RowSpan = 1;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>();
+                    this.DataContext = db.Table<Button>().ToList();
                 }
-            }
 
-            this.BottomAppBar.IsOpen = false;
+                this.BottomAppBar.IsOpen = false;
+            }
         }
 
         private void Item_Deselected(object sender, RoutedEventArgs e)
@@ -372,40 +351,17 @@ namespace TranslatorService.Example
         }
     }
 
-    public class MyGridItem
+    /* XAML helper class to convert a hexadecimal color value to a color */
+    public class StringToColorConverter : IValueConverter
     {
-        public int ID { get; set; }
-
-        /* Order on the page */
-        public int Order { get; set; }
-
-        /* Horizontal width */
-        public int ColSpan { get; set; }
-
-        /* Vertical height */
-        public int RowSpan { get; set; }
-
-        /* Text on button */
-        public string Name { get; set; }
-
-        public BitmapImage Image { get; set; }
-
-        /* Text to be spoken */
-        public string Text { get; set; }
-
-        /* Hexadecimal value of the button's color */
-        public Color Color { get; set; }
-
-        public string Description { get; set; }
-
-        public string FileName { get; set; }
-    }
-
-    public static class StringExt
-    {
-        public static string Truncate(this string value, int maxLength)
+        public object Convert(object value, Type targetType, object parameter, String language)
         {
-            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+            return ColorHelper.GetColorFromHexa((String)value);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, String language)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -420,6 +376,40 @@ namespace TranslatorService.Example
                     Convert.ToByte(hexaColor.Substring(5, 2), 16),
                     Convert.ToByte(hexaColor.Substring(7, 2), 16)
             );
+        }
+    }
+
+    public static class StringExt
+    {
+        public static string Truncate(this string value, int maxLength)
+        {
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+        }
+    }
+
+    public class StringToImageConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, String language)
+        {
+            BitmapImage image = new BitmapImage();
+            GetImage((string)value, image);
+            return image;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, String language)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async void GetImage(string path, BitmapImage image)
+        {
+            try
+            {
+                StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(path);
+                var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                image.SetSource(stream);
+            }
+            catch (FileNotFoundException ex) { }
         }
     }
 }

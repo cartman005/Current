@@ -207,7 +207,7 @@ namespace TranslatorService.Speech
             ClientID = clientID;
             ClientSecret = clientSecret;
             Language = language;
-            AudioFormat = SpeakStreamFormat.MP3;
+            AudioFormat = SpeakStreamFormat.Wave;
             AudioQuality = SpeakStreamQuality.MinSize;
             AutomaticTranslation = true;
             AutoDetectLanguage = true;

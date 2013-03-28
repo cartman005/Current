@@ -28,6 +28,11 @@
             <Setter Property="AutomationProperties.Name" Value="Smaller"/>
             <Setter Property="Content" Value="&#xE13F;"/>
         </Style>
+        <Style x:Key="NewFolderAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="NewFolderAppBarButtonStyle"/>
+            <Setter Property="AutomationProperties.Name" Value="New Category"/>
+            <Setter Property="Content" Value="&#xE1DA;"/>
+        </Style>
     </Page.Resources>
 
     <!--
@@ -57,7 +62,10 @@
             <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed"/>
         </Grid>
 
-        <local:MyGridView x:Name="DynamicGrid" Margin="10,10,10,10" IsItemClickEnabled="True" SelectionChanged="Item_Deselected" ItemClick="ItemView_ItemClick" ItemsSource="{Binding}" AllowDrop="True" CanDragItems="True" Grid.Row="2">
+        <local:MyGridView x:Name="DynamicGrid" Margin="10,10,10,10" IsItemClickEnabled="True"
+                          SelectionChanged="Item_Deselected" ItemClick="ItemView_ItemClick"
+                          ItemsSource="{Binding}" AllowDrop="True" CanDragItems="True" Grid.Row="2"
+                          Padding="50,50,50,50">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VariableSizedWrapGrid ItemHeight="150" ItemWidth="250" />
@@ -65,9 +73,9 @@
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="450" Width="750" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
+                    <Grid Height="300" Width="500" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
                         <Grid.Background>
-                            <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" />
+                            <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" Stretch="UniformToFill" />
                         </Grid.Background>
                         <StackPanel VerticalAlignment="Top">
                             <StackPanel.Background>
@@ -126,6 +134,7 @@
         <AppBar>
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="AddButton" Click="AddButton_Click" Style="{StaticResource AddAppBarButtonStyle}"/>
+                <Button x:Name="AddCategory" Click="AddCategory_Click" Style="{StaticResource NewFolderAppBarButtonStyle}"/>
             </StackPanel>
         </AppBar>
     </Page.TopAppBar>

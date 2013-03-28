@@ -28,11 +28,11 @@ namespace TranslatorService.Example
     /// <summary>
     /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class NewButtonPage : TranslatorService.Example.Common.LayoutAwarePage
+    public sealed partial class NewCategoryPage : TranslatorService.Example.Common.LayoutAwarePage
     {
 
         string category;
-        public NewButtonPage()
+        public NewCategoryPage()
         {
 
             this.InitializeComponent();
@@ -134,7 +134,7 @@ namespace TranslatorService.Example
                     Order = 0,
                     ColorHex = selection.ToString(),
                     Category = category,
-                    Type = 1
+                    Type = 2
                 });
             }
 
@@ -146,11 +146,5 @@ namespace TranslatorService.Example
             base.OnNavigatedTo(e);
             category = (string) e.Parameter;   
         } 
-    }
-
-    public class ColorChoice
-    {
-        public string Name { get; set; }
-        public Color Color { get; set; }
     }
 }

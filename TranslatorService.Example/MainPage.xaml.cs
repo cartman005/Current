@@ -33,6 +33,7 @@ namespace TranslatorService.Example
     {
         private const string CLIENT_ID = "UBTalker2013";
         private const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
+        private string category;
 
         private SpeechSynthesizer speech;
         private Popup settingsPopup;
@@ -41,7 +42,8 @@ namespace TranslatorService.Example
         {
             this.InitializeComponent();
             SettingsPane.GetForCurrentView().CommandsRequested += OnSettingsPaneRequested;
-
+            category = "Default";
+            System.Diagnostics.Debug.WriteLine("Now: " + category);
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
             speech.AudioFormat = SpeakStreamFormat.MP3;
@@ -54,7 +56,7 @@ namespace TranslatorService.Example
             db.CreateTable<Button>();
 
             /* Set data context to Button table */
-            this.DataContext = db.Table<Button>().ToList();
+            this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
         }
 
         /// <summary>
@@ -156,7 +158,7 @@ namespace TranslatorService.Example
                 var b = db.Table<Button>().FirstOrDefault(x => x.ID == index);
                 b.FileName = fileName;
                 db.Update(b);
-                this.DataContext = db.Table<Button>().ToList();
+                this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
             }
 
         }
@@ -172,7 +174,10 @@ namespace TranslatorService.Example
             // Navigate to the appropriate destination page, configuring the new page
             // by passing required information as a navigation parameter
             Button _Item = (Button)e.ClickedItem;
-            Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+            if (_Item.Type == 1)
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+            else
+                Frame.Navigate(typeof(MainPage), _Item.Text);
         }
 
         private async void CreateDatabase()
@@ -183,7 +188,15 @@ namespace TranslatorService.Example
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(NewButtonPage));
+            // If is a button
+            Frame.Navigate(typeof(NewButtonPage), category);
+            //else
+            //Frame.Navigate(typeof(MainPage), b.Category);
+        }
+
+        private void AddCategory_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(NewCategoryPage), category);
         }
 
         private void Item_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -191,12 +204,17 @@ namespace TranslatorService.Example
             this.BottomAppBar.IsOpen = true;
         }
 
-        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteItem((Button)DynamicGrid.SelectedItem);
+        }
+
+        private async void DeleteItem(Button button)
         {
             StorageFile file;
             try
             {
-                file = await ApplicationData.Current.LocalFolder.GetFileAsync(((Button)DynamicGrid.SelectedItem).ImagePath);
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync((button).ImagePath);
                 await file.DeleteAsync();
             }
             catch (Exception ex)
@@ -211,7 +229,7 @@ namespace TranslatorService.Example
             }
             try
             {
-                file = await ApplicationData.Current.LocalFolder.GetFileAsync(((Button)DynamicGrid.SelectedItem).FileName);
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync((button).FileName);
                 await file.DeleteAsync();
             }
             catch (Exception ex)
@@ -226,9 +244,13 @@ namespace TranslatorService.Example
             }
 
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
-            {                
+            {
+                foreach (Button b in db.Table<Button>().Where(x => x.Category == button.Text).ToList())
+                {
+                    DeleteItem(b);
+                }
                 db.Delete(DynamicGrid.SelectedItem);
-                this.DataContext = db.Table<Button>().ToList();
+                this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
                 this.BottomAppBar.IsOpen = false;
             }
         }
@@ -243,13 +265,13 @@ namespace TranslatorService.Example
                 {
                     b.ColSpan = 2;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
+                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
                 }
                 else if (b.ColSpan == 2 && b.RowSpan == 1)
                 {
                     b.RowSpan = 2;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
+                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
                 }
                 else if (b.ColSpan == 2 && b.RowSpan == 2)
                 {
@@ -273,13 +295,13 @@ namespace TranslatorService.Example
                 {
                     b.ColSpan = 1;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
+                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
                 }
                 else if (b.ColSpan == 2 && b.RowSpan == 2)
                 {
                     b.RowSpan = 1;
                     db.Update(b);
-                    this.DataContext = db.Table<Button>().ToList();
+                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
                 }
 
                 this.BottomAppBar.IsOpen = false;
@@ -291,6 +313,23 @@ namespace TranslatorService.Example
             if (DynamicGrid.SelectedItem == null)
             {
                 this.BottomAppBar.IsOpen = false;
+            }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("NavigatedTo was called................");
+            base.OnNavigatedTo(e);
+            if (e.Parameter != null)
+                category = (string)e.Parameter;
+            else
+                category = "Default";
+
+            System.Diagnostics.Debug.WriteLine(category);
+
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            {
+                this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
             }
         }
 

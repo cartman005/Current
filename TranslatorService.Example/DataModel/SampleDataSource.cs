@@ -19,14 +19,14 @@ using System.Collections.Specialized;
 // Applications may use this model as a starting point and build on it, or discard it entirely and
 // replace it with something appropriate to their needs.
 
-namespace TranslatorService.Data
+namespace UBTalker.Data
 {
     /// <summary>
     /// Base class for <see cref="SampleDataItem"/> and <see cref="SampleDataGroup"/> that
     /// defines properties common to both.
     /// </summary>
     [Windows.Foundation.Metadata.WebHostHidden]
-    public abstract class SampleDataCommon : TranslatorService.Example.Common.BindableBase
+    public abstract class SampleDataCommon : UBTalker.Common.BindableBase
     {
         private static Uri _baseUri = new Uri("ms-appx:///");
 

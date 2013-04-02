@@ -24,7 +24,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 
-namespace TranslatorService.Speech
+namespace UBTalker.Speech
 {
     [DataContract]
     internal class AdmAccessToken

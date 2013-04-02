@@ -28,7 +28,7 @@ using Windows.Storage.Streams;
 using Windows.Foundation;
 using System.Net.Http;
 
-namespace TranslatorService.Speech
+namespace UBTalker.Speech
 {
     /// <summary>
     /// Specifies the audio format of the retrieved audio stream.

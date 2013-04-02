@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TranslatorService.Speech;
+using UBTalker.Speech;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -23,15 +23,15 @@ using Windows.UI.Xaml.Navigation;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
-namespace TranslatorService.Example
+namespace UBTalker
 {
     /// <summary>
     /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class NewCategoryPage : TranslatorService.Example.Common.LayoutAwarePage
+    public sealed partial class NewCategoryPage : UBTalker.Common.LayoutAwarePage
     {
 
-        string category;
+        int category;
         public NewCategoryPage()
         {
 
@@ -41,7 +41,7 @@ namespace TranslatorService.Example
             ColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
             ColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
             ColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
-            ColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
             ColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
             ColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
             ColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
@@ -76,6 +76,7 @@ namespace TranslatorService.Example
         private async void UIOpenFile_Click(object sender, RoutedEventArgs e)
         {
             var picker = new FileOpenPicker();
+            Windows.UI.Xaml.Controls.Button srcButton = e.OriginalSource as Windows.UI.Xaml.Controls.Button;
 
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             picker.ViewMode = PickerViewMode.List;
@@ -96,7 +97,10 @@ namespace TranslatorService.Example
             {
             }
 
-            ButtonImageEntry.Text = file.Name;
+            if (srcButton.Name == "UIOpenFile1")
+                ButtonImageEntry.Text = file.Name;
+            else
+                BGImageEntry.Text = file.Name;
         }
 
         private void CreateButton(object sender, RoutedEventArgs e)
@@ -105,7 +109,7 @@ namespace TranslatorService.Example
             WaitProgressBar.Visibility = Visibility.Visible;
 
             /* Speak string */
-            if (string.IsNullOrWhiteSpace(ButtonTextEntry.Text) || string.IsNullOrWhiteSpace(ButtonNameEntry.Text)) {
+            if (string.IsNullOrWhiteSpace(ButtonNameEntry.Text)) {
                 WaitProgressBar.Visibility = Visibility.Collapsed;
                 return;
             }
@@ -127,14 +131,14 @@ namespace TranslatorService.Example
                 {
                     Name = ButtonNameEntry.Text,
                     Description = ButtonDescEntry.Text,
-                    Text = ButtonTextEntry.Text,
                     ColSpan = 1,
                     RowSpan = 1,
                     ImagePath = ButtonImageEntry.Text,
                     Order = 0,
                     ColorHex = selection.ToString(),
                     Category = category,
-                    Type = 2
+                    isFolder = true,
+                    BGImagePath = BGImageEntry.Text
                 });
             }
 
@@ -144,7 +148,7 @@ namespace TranslatorService.Example
         protected override void OnNavigatedTo(NavigationEventArgs e) 
         {
             base.OnNavigatedTo(e);
-            category = (string) e.Parameter;   
+            category = (int) e.Parameter;   
         } 
     }
 }

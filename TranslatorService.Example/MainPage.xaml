@@ -1,12 +1,12 @@
 ﻿<common:LayoutAwarePage
     x:Name="pageRoot"
-    x:Class="TranslatorService.Example.MainPage"
+    x:Class="UBTalker.MainPage"
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
     IsTabStop="false"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TranslatorService.Example"
-    xmlns:common="using:TranslatorService.Example.Common"
+    xmlns:local="using:UBTalker"
+    xmlns:common="using:UBTalker.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -17,6 +17,7 @@
         <x:String x:Key="AppName">UB Talker</x:String>
         <local:StringToColorConverter x:Key="ColorConverter"/>
         <local:StringToImageConverter x:Key="ImageConverter"/>
+        <local:BoolToVisibilityConverter x:Key="BoolConverter" />
 
         <Style x:Key="LargerAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="LargerAppBarButtonStyle"/>
@@ -33,6 +34,10 @@
             <Setter Property="AutomationProperties.Name" Value="New Category"/>
             <Setter Property="Content" Value="&#xE1DA;"/>
         </Style>
+        <Style x:Key="AddButtonAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AddAppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="AddButtonAppBarButtonStyle"/>
+            <Setter Property="AutomationProperties.Name" Value="New Button"/>
+        </Style>
     </Page.Resources>
 
     <!--
@@ -41,6 +46,9 @@
         * Row 1 contains the rest of the page layout
     -->
     <Grid Style="{StaticResource LayoutRootStyle}">
+        <Grid.Background>
+            <ImageBrush ImageSource="Assets/Colourful_shopping_carts.jpg"/>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="140"/>
             <RowDefinition Height="15"/>
@@ -73,15 +81,16 @@
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="300" Width="500" RightTapped="Item_RightTapped" LostFocus="Item_Deselected">
-                        <Grid.Background>
+                    <Grid Height="300" Width="500" RightTapped="Item_RightTapped" LostFocus="Item_Deselected" Background="{Binding ColorHex}">
+                       <!-- <Grid.Background>
                             <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" Stretch="UniformToFill" />
-                        </Grid.Background>
+                        </Grid.Background> -->
+                        <Image Source="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" Stretch="UniformToFill" />
                         <StackPanel VerticalAlignment="Top">
                             <StackPanel.Background>
-                                <!--<SolidColorBrush Color="Black" Opacity=".75" />-->
-                                <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" />
+                                <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" Opacity="0.8" />
                             </StackPanel.Background>
+                            <Image Width="40" Height="40" Source="Assets/folder.png" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{Binding Path=isFolder, Converter={StaticResource BoolConverter}}"></Image>
                             <TextBlock FontSize="15" Margin="10">
                                 <Run Text="{Binding Name}"/>
                             </TextBlock>
@@ -133,7 +142,7 @@
     <Page.TopAppBar>
         <AppBar>
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="AddButton" Click="AddButton_Click" Style="{StaticResource AddAppBarButtonStyle}"/>
+                <Button x:Name="AddButton" Click="AddButton_Click" Style="{StaticResource AddButtonAppBarButtonStyle}"/>
                 <Button x:Name="AddCategory" Click="AddCategory_Click" Style="{StaticResource NewFolderAppBarButtonStyle}"/>
             </StackPanel>
         </AppBar>

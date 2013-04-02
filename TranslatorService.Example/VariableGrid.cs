@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 
 // Source: http://blog.jerrynixon.com/2012/08/windows-8-beauty-tip-using.html
-namespace TranslatorService.Example
+namespace UBTalker
 {
     public class MyGridView : GridView
     {

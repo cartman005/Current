@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TranslatorService.Speech")]
+[assembly: AssemblyTitle("UBTalker.Speech")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TranslatorService.Speech")]
+[assembly: AssemblyProduct("UBTalker.Speech")]
 [assembly: AssemblyCopyright("Copyright © Marco Minerva [marco.minerva@gmail.com] 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

@@ -2539,6 +2539,7 @@ namespace SQLite
 			var query = this.Take (1);
 			return query.ToList<T>().FirstOrDefault ();
 		}
+
     }
 
 	public static class SQLite3

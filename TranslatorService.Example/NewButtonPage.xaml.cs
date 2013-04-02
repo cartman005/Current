@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TranslatorService.Speech;
+using UBTalker.Speech;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -23,15 +23,15 @@ using Windows.UI.Xaml.Navigation;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
-namespace TranslatorService.Example
+namespace UBTalker
 {
     /// <summary>
     /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class NewButtonPage : TranslatorService.Example.Common.LayoutAwarePage
+    public sealed partial class NewButtonPage : UBTalker.Common.LayoutAwarePage
     {
 
-        string category;
+        int category;
         public NewButtonPage()
         {
 
@@ -41,7 +41,7 @@ namespace TranslatorService.Example
             ColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
             ColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
             ColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
-            ColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            ColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
             ColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
             ColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
             ColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
@@ -94,6 +94,7 @@ namespace TranslatorService.Example
             }
             catch (System.Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
             }
 
             ButtonImageEntry.Text = file.Name;
@@ -134,8 +135,9 @@ namespace TranslatorService.Example
                     Order = 0,
                     ColorHex = selection.ToString(),
                     Category = category,
-                    Type = 1
+                    isFolder = false
                 });
+                System.Diagnostics.Debug.WriteLine("The category for the new button is " + category);
             }
 
             this.Frame.GoBack();
@@ -144,7 +146,7 @@ namespace TranslatorService.Example
         protected override void OnNavigatedTo(NavigationEventArgs e) 
         {
             base.OnNavigatedTo(e);
-            category = (string) e.Parameter;   
+            category = (int) e.Parameter;
         } 
     }
 

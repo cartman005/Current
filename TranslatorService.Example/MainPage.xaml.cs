@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using TranslatorService.Speech;
+using UBTalker.Speech;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -26,14 +26,15 @@ using Windows.Storage.Streams;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
-namespace TranslatorService.Example
+namespace UBTalker
 {
     // A basic page that provides characteristics common to most applications.
-    public sealed partial class MainPage : TranslatorService.Example.Common.LayoutAwarePage
+    public sealed partial class MainPage : UBTalker.Common.LayoutAwarePage
     {
         private const string CLIENT_ID = "UBTalker2013";
         private const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
-        private string category;
+        private const int DEFAULT_CATEGORY = 999999;
+        private int category;
 
         private SpeechSynthesizer speech;
         private Popup settingsPopup;
@@ -42,8 +43,8 @@ namespace TranslatorService.Example
         {
             this.InitializeComponent();
             SettingsPane.GetForCurrentView().CommandsRequested += OnSettingsPaneRequested;
-            category = "Default";
-            System.Diagnostics.Debug.WriteLine("Now: " + category);
+            category = DEFAULT_CATEGORY;
+
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
             speech.AudioFormat = SpeakStreamFormat.MP3;
@@ -57,6 +58,26 @@ namespace TranslatorService.Example
 
             /* Set data context to Button table */
             this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
+            var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
+
+            if (b != null && b.BGImagePath != null)
+                SetBackground(b.BGImagePath);
+        }
+
+        public async void SetBackground(string path)
+        {
+            ImageBrush brush = new ImageBrush();
+            try
+            {
+                StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(path);
+                var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                BitmapImage image = new BitmapImage();
+                image.SetSource(stream);
+                brush.ImageSource = image;
+                brush.Stretch = Stretch.UniformToFill;
+                DynamicGrid.Background = brush;
+            }
+            catch (Exception ex) { }
         }
 
         /// <summary>
@@ -174,10 +195,10 @@ namespace TranslatorService.Example
             // Navigate to the appropriate destination page, configuring the new page
             // by passing required information as a navigation parameter
             Button _Item = (Button)e.ClickedItem;
-            if (_Item.Type == 1)
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+            if (_Item.isFolder)
+                Frame.Navigate(typeof(MainPage), _Item.ID);
             else
-                Frame.Navigate(typeof(MainPage), _Item.Text);
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID);
         }
 
         private async void CreateDatabase()
@@ -245,7 +266,7 @@ namespace TranslatorService.Example
 
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
             {
-                foreach (Button b in db.Table<Button>().Where(x => x.Category == button.Text).ToList())
+                foreach (Button b in db.Table<Button>().Where(x => x.Category == button.ID).ToList())
                 {
                     DeleteItem(b);
                 }
@@ -318,18 +339,25 @@ namespace TranslatorService.Example
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("NavigatedTo was called................");
             base.OnNavigatedTo(e);
             if (e.Parameter != null)
-                category = (string)e.Parameter;
+                category = (int)e.Parameter;
             else
-                category = "Default";
-
-            System.Diagnostics.Debug.WriteLine(category);
+                category = DEFAULT_CATEGORY;
 
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
             {
                 this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
+                var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
+
+                if (b != null && b.BGImagePath != null)
+                {
+                    try
+                    {
+                        SetBackground(b.BGImagePath);
+                    }
+                    catch (Exception ex) { };
+                }
             }
         }
 
@@ -387,6 +415,22 @@ namespace TranslatorService.Example
             {
                 settingsPopup.IsOpen = false;
             }
+        }
+    }
+
+    /* XAML helper class to convert a hexadecimal color value to a color */
+    public class BoolToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, String language)
+        {
+            if ((Boolean)value)
+                return Visibility.Visible;
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, String language)
+        {
+            throw new NotImplementedException();
         }
     }
 

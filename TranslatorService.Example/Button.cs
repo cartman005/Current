@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media.Imaging;
 
-namespace TranslatorService.Example
+namespace UBTalker
 {
     /*
      * Database to store each button for a given page.
@@ -40,8 +40,10 @@ namespace TranslatorService.Example
 
         public string FileName { get; set; }
 
-        public string Category { get; set; }
+        public int Category { get; set; }
 
-        public int Type { get; set; }
+        public Boolean isFolder { get; set; }
+
+        public string BGImagePath { get; set; }
     }
 }

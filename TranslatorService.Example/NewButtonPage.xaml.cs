@@ -122,7 +122,7 @@ namespace UBTalker
                 selection = Colors.Black;
 
             /* Add button to database */
-            using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 db.Insert(new Button
                 {

@@ -53,7 +53,7 @@ namespace UBTalker
             speech.AutomaticTranslation = false;
 
             /* Database transactions */
-            var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite"));
+            var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
             db.CreateTable<Button>();
 
             /* Set data context to Button table */
@@ -174,7 +174,7 @@ namespace UBTalker
             System.Diagnostics.Debug.WriteLine(file.Path);
             await Windows.Storage.FileIO.WriteBytesAsync(file, buffer);
 
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 var b = db.Table<Button>().FirstOrDefault(x => x.ID == index);
                 b.FileName = fileName;
@@ -264,7 +264,7 @@ namespace UBTalker
                 }
             }
 
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 foreach (Button b in db.Table<Button>().Where(x => x.Category == button.ID).ToList())
                 {
@@ -278,7 +278,7 @@ namespace UBTalker
 
         private void EnlargeButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 Button b = (Button)DynamicGrid.SelectedItem;
 
@@ -305,7 +305,7 @@ namespace UBTalker
 
         private void ShrinkButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 Button b = (Button)DynamicGrid.SelectedItem;
                 if (b.ColSpan == 1 && b.RowSpan == 1)
@@ -345,7 +345,7 @@ namespace UBTalker
             else
                 category = DEFAULT_CATEGORY;
 
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "mydb.sqlite")))
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
                 var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);

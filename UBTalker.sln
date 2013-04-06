@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Windows 8
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBTalker", "TranslatorService.Example\UBTalker.csproj", "{C1E47435-87BE-4402-B67F-F712A716A745}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBTalker", "UBTalker\UBTalker.csproj", "{C1E47435-87BE-4402-B67F-F712A716A745}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FC51D433-6C19-4C45-800B-53435D8BBE44} = {FC51D433-6C19-4C45-800B-53435D8BBE44}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBTalker.Speech", "TranslatorService.Speech\UBTalker.Speech.csproj", "{FC51D433-6C19-4C45-800B-53435D8BBE44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UBTalker.Speech", "UBTalker.Speech\UBTalker.Speech.csproj", "{FC51D433-6C19-4C45-800B-53435D8BBE44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

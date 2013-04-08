@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
+  <Identity Name="49b02fd8-6cf3-448c-bbd8-b6f95e5aee41" Publisher="CN=UB" Version="1.0.0.2" />
+  <Properties>
+    <DisplayName>UBTalker</DisplayName>
+    <PublisherDisplayName>SUNY - Buffalo</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.2.1</OSMinVersion>
+    <OSMaxVersionTested>6.2.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="UBTalker.App">
+      <VisualElements DisplayName="UB Talker" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="UB Talker" ForegroundText="light" BackgroundColor="#0000ff">
+        <DefaultTile ShortName="UB Talker" ShowName="allLogos" WideLogo="Assets\WideLogo.png" />
+        <SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#0000ff" />
+        <InitialRotationPreference>
+          <Rotation Preference="portrait" />
+          <Rotation Preference="landscape" />
+          <Rotation Preference="portraitFlipped" />
+          <Rotation Preference="landscapeFlipped" />
+        </InitialRotationPreference>
+      </VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClient" />
+  </Capabilities>
+</Package>

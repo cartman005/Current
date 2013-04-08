@@ -1,0 +1,32 @@
+﻿<UserControl
+    x:Class="UBTalker.SettingsViews.About"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UBTalker.SettingsViews"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="768"
+    d:DesignWidth="346" Width="346" Height="768">
+
+    <Grid>
+        <TextBlock HorizontalAlignment="Left" Margin="37.883,44.568,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="258.492" Style="{StaticResource TitleTextStyle}" Text="UB Talker"/>
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="258" Height="298" Margin="38,75,0,0" Style="{StaticResource BodyTextStyle}">
+        	<Run Text="CSE 453 - Spring 2013"/>
+        	<LineBreak/>
+        	<Run/>
+        	<LineBreak/>
+        	<Run Text="Dan Kozlowski"/>
+        	<LineBreak/>
+        	<Run Text="Matt Flood"/>
+        	<LineBreak/>
+        	<Run Text="Shane Anderson"/>
+        	<LineBreak/>
+        	<Run Text="Kshitij Srivastava"/>
+        	<LineBreak/>
+        	<Run Text="Xi Chen"/>
+        </TextBlock>
+
+
+    </Grid>
+</UserControl>

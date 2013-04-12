@@ -126,9 +126,9 @@
     <Compile Include="SettingsViews\About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SettingsViews\VoiceSettings.xaml.cs">
+    <Compile Include="SettingsViews\GeneralSettings.xaml.cs">
       <SubType>Code</SubType>
-      <DependentUpon>VoiceSettings.xaml</DependentUpon>
+      <DependentUpon>GeneralSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="SimpleSettingsNarrow.xaml.cs">
       <DependentUpon>SimpleSettingsNarrow.xaml</DependentUpon>
@@ -164,7 +164,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SettingsViews\VoiceSettings.xaml">
+    <Page Include="SettingsViews\GeneralSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

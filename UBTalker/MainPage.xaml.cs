@@ -31,11 +31,14 @@ namespace UBTalker
     // A basic page that provides characteristics common to most applications.
     public sealed partial class MainPage : UBTalker.Common.LayoutAwarePage
     {
-        private const string CLIENT_ID = "UBTalker2013";
-        private const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
-        private const int DEFAULT_CATEGORY = 999999;
+        public const string CLIENT_ID = "UBTalker2013";
+        public const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
+        public const int DEFAULT_CATEGORY = 999999;
         private int category;
         public static string SpeakingLanguage;
+        public static bool SingleSwitch;
+        public static DispatcherTimer Timer;
+        public static MainPage Current;
 
         private SpeechSynthesizer speech;
 
@@ -43,7 +46,12 @@ namespace UBTalker
         {
             this.InitializeComponent();
 
+            Current = this;
+
             category = DEFAULT_CATEGORY;
+            Timer = new DispatcherTimer();
+            Timer.Interval = TimeSpan.FromSeconds(3);
+            Timer.Tick += timer_Ticker;
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
@@ -53,17 +61,23 @@ namespace UBTalker
             speech.AutomaticTranslation = false;
 
             // Load settings
+            SpeakingLanguage = "en-us";
+            SingleSwitch = false;
             var settings = ApplicationData.Current.LocalSettings;
-            try
+            if (settings != null)
             {
-                SpeakingLanguage = settings.Values["lang"].ToString();
-                System.Diagnostics.Debug.WriteLine("Language is: " + SpeakingLanguage);
+                /* Language */
+                if (settings.Values.ContainsKey("lang"))
+                    SpeakingLanguage = settings.Values["lang"].ToString();
+                
+                /* Mode */
+                if (settings.Values.ContainsKey("single_switch"))
+                    SingleSwitch = (bool)settings.Values["single_switch"];
+
+                /* Interval */
+                if (settings.Values.ContainsKey("timer_interval"))
+                    Timer.Interval = (TimeSpan)settings.Values["timer_interval"];
             }
-            catch (Exception ex)
-            {
-                SpeakingLanguage = "en-us";
-            }
-            speech.Language = SpeakingLanguage;
 
             /* Set up database */
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
@@ -76,6 +90,26 @@ namespace UBTalker
             /* Set background image */
             if (b != null && b.BGImagePath != null)
                 SetBackground(b.BGImagePath);
+
+            /* Start the timer */
+            if (SingleSwitch)
+            {
+                Timer.Start();
+                if (DynamicGrid.Items.Count > 0)
+                    DynamicGrid.SelectedIndex = 0;
+            }
+        }
+
+
+        private void timer_Ticker(object sender, object e)
+        {
+            if (DynamicGrid.Items.Count > 0)
+            {
+                if (DynamicGrid.SelectedIndex == DynamicGrid.Items.Count - 1)
+                    DynamicGrid.SelectedIndex = 0;
+                else
+                    DynamicGrid.SelectedIndex++;
+            }
         }
 
         /* Sets the background image for the current page */
@@ -354,6 +388,25 @@ namespace UBTalker
             if (DynamicGrid.SelectedItem == null)
             {
                 this.BottomAppBar.IsOpen = false;
+            }
+        }
+
+        public void SetSwitch(bool Switch)
+        {
+            SingleSwitch = Switch;
+            if (SingleSwitch)
+            {
+                if (!Timer.IsEnabled)
+                {
+                    Timer.Start();
+                    if (DynamicGrid.Items.Count > 0)
+                        DynamicGrid.SelectedIndex = 0;
+                }
+            }
+            else if (Timer.IsEnabled)
+            {
+                Timer.Stop();
+                DynamicGrid.SelectedItem = null;
             }
         }
 

@@ -75,18 +75,18 @@ namespace UBTalker
 
         private void Settings_CommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            // Voice Settings
-            SettingsCommand voiceSettings = new SettingsCommand("VoiceSettings", "Voice Settings", (x) =>
+            // Settings
+            SettingsCommand generalSettings = new SettingsCommand("GeneralSettings", "Settings", (x) =>
             {
                 SettingsFlyout settings = new SettingsFlyout();
                 settings.FlyoutWidth = Callisto.Controls.SettingsFlyout.SettingsFlyoutWidth.Narrow;
-                settings.HeaderText = "Voice Settings";
+                settings.HeaderText = "UB Talker Settings";
                 settings.ContentBackgroundBrush = new SolidColorBrush(Colors.Black);
 
-                settings.Content = new VoiceSettings();
+                settings.Content = new GeneralSettings();
                 settings.IsOpen = true;
             });
-            args.Request.ApplicationCommands.Add(voiceSettings);
+            args.Request.ApplicationCommands.Add(generalSettings);
 
             // About
             SettingsCommand about = new SettingsCommand("About", "About", (x) =>

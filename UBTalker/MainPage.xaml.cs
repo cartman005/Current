@@ -22,6 +22,8 @@ using Windows.ApplicationModel.Resources;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.Storage.Streams;
 using Callisto.Controls;
+using Windows.System;
+using Windows.UI.Core;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -48,10 +50,13 @@ namespace UBTalker
 
             Current = this;
 
-            category = DEFAULT_CATEGORY;
-            Timer = new DispatcherTimer();
-            Timer.Interval = TimeSpan.FromSeconds(3);
-            Timer.Tick += timer_Ticker;
+            /* Set up timer */
+            if (Timer == null)      // Ensure that there's only one Timer
+            {
+                Timer = new DispatcherTimer();
+                Timer.Interval = TimeSpan.FromSeconds(3);
+                Timer.Tick += timer_Ticker;
+            }
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
@@ -79,36 +84,37 @@ namespace UBTalker
                     Timer.Interval = (TimeSpan)settings.Values["timer_interval"];
             }
 
+            SetSwitch(SingleSwitch);
+
             /* Set up database */
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
             db.CreateTable<Button>();
-
-            /* Set data context to Button table */
             this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
             var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
+
+            if (b != null && b.BGImagePath != null)
+            {
+                try
+                {
+                    SetBackground(b.BGImagePath);
+                }
+                catch (Exception ex) { };
+            }
 
             /* Set background image */
             if (b != null && b.BGImagePath != null)
                 SetBackground(b.BGImagePath);
-
-            /* Start the timer */
-            if (SingleSwitch)
-            {
-                Timer.Start();
-                if (DynamicGrid.Items.Count > 0)
-                    DynamicGrid.SelectedIndex = 0;
-            }
         }
 
 
         private void timer_Ticker(object sender, object e)
         {
-            if (DynamicGrid.Items.Count > 0)
+            if (Current.DynamicGrid.Items.Count > 0)
             {
-                if (DynamicGrid.SelectedIndex == DynamicGrid.Items.Count - 1)
-                    DynamicGrid.SelectedIndex = 0;
+                if (Current.DynamicGrid.SelectedIndex == Current.DynamicGrid.Items.Count - 1)
+                    Current.DynamicGrid.SelectedIndex = 0;
                 else
-                    DynamicGrid.SelectedIndex++;
+                    Current.DynamicGrid.SelectedIndex++;
             }
         }
 
@@ -240,6 +246,25 @@ namespace UBTalker
                 this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
             }
 
+        }
+
+
+        private void ItemClick(CoreWindow sender, KeyEventArgs args)
+        {
+            if (this.Frame.CurrentSourcePageType.Equals(typeof(MainPage))) {
+                if (args.VirtualKey == VirtualKey.A)
+                {
+                    try
+                    {
+                        Button _Item = (Button)Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex];
+                        if (_Item.isFolder)
+                            Frame.Navigate(typeof(MainPage), _Item.ID);
+                        else
+                            Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+                    }
+                    catch (Exception ex) { }
+                }
+            }
         }
 
         /// <summary>
@@ -399,20 +424,31 @@ namespace UBTalker
                 if (!Timer.IsEnabled)
                 {
                     Timer.Start();
-                    if (DynamicGrid.Items.Count > 0)
-                        DynamicGrid.SelectedIndex = 0;
+                    if (Current.DynamicGrid.Items.Count > 0)
+                        Current.DynamicGrid.SelectedIndex = 0;
+                    Window.Current.CoreWindow.KeyDown += ItemClick;
                 }
             }
-            else if (Timer.IsEnabled)
-            {
-                Timer.Stop();
-                DynamicGrid.SelectedItem = null;
+            else {
+                if (Timer.IsEnabled)
+                {
+                    Timer.Stop();
+                    Current.DynamicGrid.SelectedItem = null;
+                }
+                Window.Current.CoreWindow.KeyDown -= ItemClick;
             }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            Current = this;
+
+            // Set the input focus to ensure that keyboard events are raised.
+            this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
+
+            // Set the category
             if (e.Parameter != null)
                 category = (int)e.Parameter;
             else
@@ -420,16 +456,24 @@ namespace UBTalker
 
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
-                this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
-                var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
-
-                if (b != null && b.BGImagePath != null)
+                List<Button> data = db.Table<Button>().Where(x => x.Category == category).ToList();
+                if (this.DataContext != data)
                 {
-                    try
+                    this.DataContext = data;
+                    var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
+
+                    if (b != null && b.BGImagePath != null)
                     {
-                        SetBackground(b.BGImagePath);
+                        try
+                        {
+                            SetBackground(b.BGImagePath);
+                        }
+                        catch (Exception ex) { };
                     }
-                    catch (Exception ex) { };
+
+                    /* Set background image */
+                    if (b != null && b.BGImagePath != null)
+                        SetBackground(b.BGImagePath);
                 }
             }
         }

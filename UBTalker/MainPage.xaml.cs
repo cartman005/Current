@@ -485,6 +485,9 @@ namespace UBTalker
             {
                 DeleteButton.Visibility = Visibility.Visible;
 
+                if (!selection.isFolder)
+                    EditButton.Visibility = Visibility.Visible;
+
                 if (selection.RowSpan != 2)
                     EnlargeButton.Visibility = Visibility.Visible;
 
@@ -498,6 +501,12 @@ namespace UBTalker
             EnlargeButton.Visibility = Visibility.Collapsed;
             ShrinkButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
+            EditButton.Visibility = Visibility.Collapsed;
+        }
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(EditButtonPage), ((Button)DynamicGrid.SelectedItem).ID);
         }
     }
 

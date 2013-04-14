@@ -112,6 +112,9 @@
     <Compile Include="Common\LayoutAwarePage.cs" />
     <Compile Include="Common\RichTextColumns.cs" />
     <Compile Include="Common\SuspensionManager.cs" />
+    <Compile Include="EditButtonPage.xaml.cs">
+      <DependentUpon>EditButtonPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NewCategoryPage.xaml.cs">
       <DependentUpon>NewCategoryPage.xaml</DependentUpon>
     </Compile>
@@ -152,6 +155,10 @@
     <Content Include="Assets\SmallLogo.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Common\ReadMe.txt" />
+    <Page Include="EditButtonPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SettingsViews\About.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

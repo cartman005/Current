@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-  <Identity Name="49b02fd8-6cf3-448c-bbd8-b6f95e5aee41" Publisher="CN=UB" Version="1.0.0.2" />
+  <Identity Name="49b02fd8-6cf3-448c-bbd8-b6f95e5aee41" Publisher="CN=UB" Version="1.0.0.3" />
   <Properties>
     <DisplayName>UBTalker</DisplayName>
     <PublisherDisplayName>SUNY - Buffalo</PublisherDisplayName>

@@ -172,7 +172,7 @@ namespace UBTalker
 
 
         /* Plays the given file. If the file does not exist, creates it */
-        private async void Speak_String(string text, string filename, int id)
+        private async void Speak_String(string text, string filename, int id, string lang)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
@@ -194,7 +194,7 @@ namespace UBTalker
                 if (ex is ArgumentNullException || ex is FileNotFoundException)
                 {
                     WaitProgressBar.Visibility = Visibility.Collapsed;
-                    Store_String(text, id);
+                    Store_String(text, id, lang);
                     WaitProgressBar.Visibility = Visibility.Visible;
                 }
                 else
@@ -207,12 +207,12 @@ namespace UBTalker
         }
 
         /* Gets the audio file and stores it */
-        private async void Store_String(string text, int index)
+        private async void Store_String(string text, int index, string lang)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
             // Gets the audio stream.
-            var stream = await speech.GetSpeakStreamAsync(text, SpeakingLanguage);
+            var stream = await speech.GetSpeakStreamAsync(text, lang);
 
             // Reproduces the audio stream using a MediaElement.
             SpeechMediaElement.SetSource(stream, speech.MimeContentType);
@@ -260,7 +260,7 @@ namespace UBTalker
                         if (_Item.isFolder)
                             Frame.Navigate(typeof(MainPage), _Item.ID);
                         else
-                            Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language);
                     }
                     catch (Exception ex) { }
                 }
@@ -281,7 +281,7 @@ namespace UBTalker
             if (_Item.isFolder)
                 Frame.Navigate(typeof(MainPage), _Item.ID);
             else
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID);
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language);
         }
 
         /* Switches to the new button screen */

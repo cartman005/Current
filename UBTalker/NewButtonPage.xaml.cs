@@ -134,7 +134,8 @@ namespace UBTalker
                     Order = 0,
                     ColorHex = selection.ToString(),
                     Category = category,
-                    isFolder = false
+                    isFolder = false,
+                    Language = MainPage.SpeakingLanguage
                 });
                 System.Diagnostics.Debug.WriteLine("The category for the new button is " + category);
             }

@@ -53,5 +53,8 @@ namespace UBTalker
 
         /* If element is a category, filename of background image for category */
         public string BGImagePath { get; set; }
+
+        /* The language that the button should be translated in */
+        public string Language { get; set; }
     }
 }

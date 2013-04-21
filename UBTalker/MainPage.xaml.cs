@@ -115,6 +115,9 @@ namespace UBTalker
                     Current.DynamicGrid.SelectedIndex = 0;
                 else
                     Current.DynamicGrid.SelectedIndex++;
+
+                Button _Item = (Button)Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex];
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, true);
             }
         }
 
@@ -172,7 +175,7 @@ namespace UBTalker
 
 
         /* Plays the given file. If the file does not exist, creates it */
-        private async void Speak_String(string text, string filename, int id, string lang)
+        private async void Speak_String(string text, string filename, int id, string lang, bool soft)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
@@ -186,6 +189,8 @@ namespace UBTalker
 
                 var stream = await myAudio.OpenAsync(FileAccessMode.Read);
                 mediaElement.SetSource(stream, myAudio.ContentType);
+                if (!soft)
+                    mediaElement.Volume = 1;
                 mediaElement.Play();
             }
             /* Create the file */
@@ -260,7 +265,7 @@ namespace UBTalker
                         if (_Item.isFolder)
                             Frame.Navigate(typeof(MainPage), _Item.ID);
                         else
-                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language);
+                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
                     }
                     catch (Exception ex) { }
                 }
@@ -281,7 +286,7 @@ namespace UBTalker
             if (_Item.isFolder)
                 Frame.Navigate(typeof(MainPage), _Item.ID);
             else
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language);
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
         }
 
         /* Switches to the new button screen */

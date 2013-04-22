@@ -70,15 +70,15 @@
         <GridView x:Name="DynamicGrid" Margin="10,10,10,10" IsItemClickEnabled="True"
                           SelectionChanged="Item_Deselected" ItemClick="ItemView_ItemClick"
                           ItemsSource="{Binding}" AllowDrop="True" CanDragItems="True" Grid.Row="2"
-                          Padding="50,50,50,50">
+                          Padding="50,50,50,50" CanReorderItems="True" >
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="Vertical" Height="150" Width="150" />
+                    <WrapGrid HorizontalChildrenAlignment="Left" VerticalChildrenAlignment="Top" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="300" Width="500" RightTapped="Item_RightTapped" LostFocus="Item_Deselected" Background="{Binding ColorHex}">
+                    <Grid Height="150" Width="200" VerticalAlignment="Top" HorizontalAlignment="Left" RightTapped="Item_RightTapped" LostFocus="Item_Deselected" Background="{Binding ColorHex}">
                        <!-- <Grid.Background>
                             <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" Stretch="UniformToFill" />
                         </Grid.Background> -->

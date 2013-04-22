@@ -20,12 +20,6 @@ namespace UBTalker
         /* Order on the page */
         public int Order { get; set; }
 
-        /* Horizontal width */
-        public int ColSpan { get; set; }
-
-        /* Vertical height */
-        public int RowSpan { get; set; }
-
         /* Text on button */
         public string Name { get; set; }
 

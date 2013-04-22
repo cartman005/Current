@@ -40,8 +40,11 @@ namespace UBTalker
         private int category;
         public static string SpeakingLanguage;
         public static bool SingleSwitch;
+        public static bool Whisper;
+        public static bool RightOnly;
         public static DispatcherTimer Timer;
         public static MainPage Current;
+        private ObservableCollection<Button> Col;
 
         private SpeechSynthesizer speech;
 
@@ -58,6 +61,9 @@ namespace UBTalker
                 Timer.Interval = TimeSpan.FromSeconds(3);
                 Timer.Tick += timer_Ticker;
             }
+
+            Current.Col = new ObservableCollection<Button>();
+            Current.Col.CollectionChanged += Current.Col_CollectionChanged;
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
@@ -78,7 +84,13 @@ namespace UBTalker
                 
                 /* Mode */
                 if (settings.Values.ContainsKey("single_switch"))
+                {
                     SingleSwitch = (bool)settings.Values["single_switch"];
+                    if (settings.Values.ContainsKey("whisper"))
+                        Whisper = (bool)settings.Values["whisper"];
+                    if (settings.Values.ContainsKey("right_only"))
+                        RightOnly = (bool)settings.Values["right_only"];
+                }
 
                 /* Interval */
                 if (settings.Values.ContainsKey("timer_interval"))
@@ -90,8 +102,7 @@ namespace UBTalker
             /* Set up database */
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
             db.CreateTable<Button>();
-            ObservableCollection<Button> list = new ObservableCollection<Button>(db.Table<Button>().Where(x => x.Category == category));
-            this.DataContext = list;
+            Load_Buttons(db);
             var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
 
             if (b != null && b.BGImagePath != null)
@@ -118,8 +129,11 @@ namespace UBTalker
                 else
                     Current.DynamicGrid.SelectedIndex++;
 
-                Button _Item = (Button)Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex];
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, true);
+                if (Whisper || RightOnly)
+                {
+                    Button selection = Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex] as Button;
+                    Speak_String(selection.Text, selection.FileName, selection.ID, selection.Language, Whisper, RightOnly);
+                }
             }
         }
 
@@ -177,9 +191,19 @@ namespace UBTalker
 
 
         /* Plays the given file. If the file does not exist, creates it */
-        private async void Speak_String(string text, string filename, int id, string lang, bool soft)
+        private async void Speak_String(string text, string filename, int id, string lang, bool whisper, bool right_only)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
+
+            /* Set up Media Element */
+            if (whisper)
+                SpeechMediaElement.Volume = 0.2;
+            else
+                SpeechMediaElement.Volume = 1;
+            if (right_only)
+                SpeechMediaElement.Balance = 1;
+            else
+                SpeechMediaElement.Balance = 0;
 
             /* Try to play the file */
             try
@@ -187,17 +211,13 @@ namespace UBTalker
                 System.Diagnostics.Debug.WriteLine(filename);
                 var myAudio = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(filename);
                 System.Diagnostics.Debug.WriteLine("Playing " + text + " from memory");
-                MediaElement mediaElement = new MediaElement();
-
                 var stream = await myAudio.OpenAsync(FileAccessMode.Read);
-                mediaElement.SetSource(stream, myAudio.ContentType);
-                if (!soft)
-                    mediaElement.Volume = 1;
-                mediaElement.Play();
+                SpeechMediaElement.SetSource(stream, speech.MimeContentType);
             }
             /* Create the file */
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine("Issue playing the file");
                 if (ex is ArgumentNullException || ex is FileNotFoundException)
                 {
                     WaitProgressBar.Visibility = Visibility.Collapsed;
@@ -250,7 +270,7 @@ namespace UBTalker
                 var b = db.Table<Button>().FirstOrDefault(x => x.ID == index);
                 b.FileName = fileName;
                 db.Update(b);
-                this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
+                Load_Buttons(db);
             }
 
         }
@@ -267,7 +287,7 @@ namespace UBTalker
                         if (_Item.isFolder)
                             Frame.Navigate(typeof(MainPage), _Item.ID);
                         else
-                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
+                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false, false);
                     }
                     catch (Exception ex) { }
                 }
@@ -288,7 +308,7 @@ namespace UBTalker
             if (_Item.isFolder)
                 Frame.Navigate(typeof(MainPage), _Item.ID);
             else
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false, false);
         }
 
         /* Switches to the new button screen */
@@ -357,7 +377,7 @@ namespace UBTalker
                     DeleteItem(b);
                 }
                 db.Delete(DynamicGrid.SelectedItem);
-                this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
+                Load_Buttons(db);
                 this.BottomAppBar.IsOpen = false;
             }
         }
@@ -410,10 +430,11 @@ namespace UBTalker
 
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
-                List<Button> data = db.Table<Button>().Where(x => x.Category == category).ToList();
-                if (this.DataContext != data)
+                ObservableCollection<Button> temp = new ObservableCollection<Button>(db.Table<Button>().Where(x => x.Category == category).OrderBy(x => x.Order));
+                
+                if (this.DataContext != temp)
                 {
-                    this.DataContext = data;
+                    Load_Buttons(db);
                     var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
 
                     if (b != null && b.BGImagePath != null)
@@ -453,6 +474,32 @@ namespace UBTalker
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(EditButtonPage), ((Button)DynamicGrid.SelectedItem).ID);
+        }
+
+        private void Load_Buttons(SQLiteConnection db)
+        {
+            Current.Col.Clear();
+            var list = db.Table<Button>().Where(x => x.Category == category).OrderBy(x => x.Order).ToList();
+            foreach (var i in list)
+            {
+                Current.Col.Add(i);
+            }
+            this.DataContext = Current.Col;
+        }
+
+        private void Col_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Changed------");
+            var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
+            ObservableCollection<Button> list = Current.DynamicGrid.DataContext as ObservableCollection<Button>;
+            if (list == null)
+                return;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].Order = i;
+            }
+            db.UpdateAll(list);
         }
     }
 

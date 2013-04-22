@@ -124,14 +124,23 @@ namespace UBTalker
             /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
+                Button temp = null;
+                try
+                {
+                    temp = db.Table<Button>().OrderBy(x => x.ID).Last();
+                }
+                catch (Exception ex) { }
+
+                int rowid = 1;
+                if (temp != null)
+                    rowid = temp.ID + 1;
+
                 db.Insert(new Button
                 {
                     Name = ButtonNameEntry.Text,
                     Text = ButtonTextEntry.Text,
-                    ColSpan = 1,
-                    RowSpan = 1,
                     ImagePath = ButtonImageEntry.Text,
-                    Order = 0,
+                    Order = rowid,
                     ColorHex = selection.ToString(),
                     Category = category,
                     isFolder = false,

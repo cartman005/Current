@@ -45,14 +45,27 @@ namespace UBTalker.SettingsViews
                 IntervalSelection.SelectedIndex = 0;
             else if (MainPage.Timer.Interval == TimeSpan.FromSeconds(3))
                 IntervalSelection.SelectedIndex = 1;
-            else
+            else if (MainPage.Timer.Interval == TimeSpan.FromSeconds(5))
                 IntervalSelection.SelectedIndex = 2;
+            else
+                IntervalSelection.SelectedIndex = 3;
+
+            if (MainPage.Whisper == false && MainPage.RightOnly == false)
+                WhisperSelection.SelectedIndex = 0;
+            else if (MainPage.Whisper == true && MainPage.RightOnly == false)
+                WhisperSelection.SelectedIndex = 1;
+            else if (MainPage.Whisper == false && MainPage.RightOnly == true)
+                WhisperSelection.SelectedIndex = 2;
+            else
+                IntervalSelection.SelectedIndex = 3;
 
             SingleSwitchToggle.IsOn = MainPage.SingleSwitch;
             if (MainPage.SingleSwitch)
             {
                 IntervalLabel.Visibility = Visibility.Visible;
                 IntervalSelection.Visibility = Visibility.Visible;
+                WhisperLabel.Visibility = Visibility.Visible;
+                WhisperSelection.Visibility = Visibility.Visible;
             }
         }
 
@@ -100,11 +113,15 @@ namespace UBTalker.SettingsViews
             {
                 IntervalLabel.Visibility = Visibility.Visible;
                 IntervalSelection.Visibility = Visibility.Visible;
+                WhisperLabel.Visibility = Visibility.Visible;
+                WhisperSelection.Visibility = Visibility.Visible;
             }
             else
             {
                 IntervalLabel.Visibility = Visibility.Collapsed;
                 IntervalSelection.Visibility = Visibility.Collapsed;
+                WhisperLabel.Visibility = Visibility.Collapsed;
+                WhisperSelection.Visibility = Visibility.Collapsed;
             }
 
             var settings = ApplicationData.Current.LocalSettings;
@@ -133,6 +150,11 @@ namespace UBTalker.SettingsViews
                     case 2:
                         MainPage.Timer.Interval = TimeSpan.FromSeconds(5);
                         break;
+                    case 3:
+                        MainPage.Timer.Interval = TimeSpan.FromSeconds(10);
+                        break;
+                    default:
+                        break;
                 }
 
                 /* Store setting */
@@ -144,11 +166,55 @@ namespace UBTalker.SettingsViews
                     else
                         settings.Values.Add("timer_interval", MainPage.Timer.Interval);
                 }
-
             }
             catch (Exception ex)
             { }
+        }
 
+        private void WhisperSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                /* Update Interval */
+                switch (WhisperSelection.SelectedIndex)
+                {
+                    case 0:
+                        MainPage.Whisper = false;
+                        MainPage.RightOnly = false;
+                        break;
+                    case 1:
+                        MainPage.Whisper = true;
+                        MainPage.RightOnly = false;
+                        break;
+                    case 2:
+                        MainPage.Whisper = false;
+                        MainPage.RightOnly = true;
+                        break;
+                    case 3:
+                        MainPage.Whisper = true;
+                        MainPage.RightOnly = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                /* Store setting */
+                var settings = ApplicationData.Current.LocalSettings;
+                if (settings != null)
+                {
+                    if (settings.Values.ContainsKey("whisper"))
+                        settings.Values["whisper"] = MainPage.Whisper;
+                    else
+                        settings.Values.Add("whisper", MainPage.Whisper);
+
+                    if (settings.Values.ContainsKey("right_only"))
+                        settings.Values["right_only"] = MainPage.RightOnly;
+                    else
+                        settings.Values.Add("right_only", MainPage.RightOnly);
+                }
+            }
+            catch (Exception ex)
+            { }
         }
     }
 }

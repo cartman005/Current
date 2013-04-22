@@ -24,6 +24,7 @@ using Windows.Storage.Streams;
 using Callisto.Controls;
 using Windows.System;
 using Windows.UI.Core;
+using System.Collections.ObjectModel;
 
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -89,7 +90,8 @@ namespace UBTalker
             /* Set up database */
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
             db.CreateTable<Button>();
-            this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
+            ObservableCollection<Button> list = new ObservableCollection<Button>(db.Table<Button>().Where(x => x.Category == category));
+            this.DataContext = list;
             var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
 
             if (b != null && b.BGImagePath != null)
@@ -360,59 +362,6 @@ namespace UBTalker
             }
         }
 
-        private void EnlargeButton_Click(object sender, RoutedEventArgs e)
-        {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
-            {
-                Button b = (Button)DynamicGrid.SelectedItem;
-
-                if (b.ColSpan == 1 && b.RowSpan == 1)
-                {
-                    b.ColSpan = 2;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 1)
-                {
-                    b.RowSpan = 2;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 2)
-                {
-                    /* Maximum size */
-                }
-
-                this.BottomAppBar.IsOpen = false;
-            }
-        }
-
-        private void ShrinkButton_Click(object sender, RoutedEventArgs e)
-        {
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
-            {
-                Button b = (Button)DynamicGrid.SelectedItem;
-                if (b.ColSpan == 1 && b.RowSpan == 1)
-                {
-                    /* Minimum size */
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 1)
-                {
-                    b.ColSpan = 1;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
-                }
-                else if (b.ColSpan == 2 && b.RowSpan == 2)
-                {
-                    b.RowSpan = 1;
-                    db.Update(b);
-                    this.DataContext = db.Table<Button>().Where(x => x.Category == category).ToList();
-                }
-
-                this.BottomAppBar.IsOpen = false;
-            }
-        }
-
         private void Item_Deselected(object sender, RoutedEventArgs e)
         {
             if (DynamicGrid.SelectedItem == null)
@@ -492,19 +441,11 @@ namespace UBTalker
 
                 if (!selection.isFolder)
                     EditButton.Visibility = Visibility.Visible;
-
-                if (selection.RowSpan != 2)
-                    EnlargeButton.Visibility = Visibility.Visible;
-
-                if (selection.ColSpan != 1)
-                    ShrinkButton.Visibility = Visibility.Visible;
             }
         }
 
         private void AppBar_Unloaded(object sender, RoutedEventArgs e)
         {
-            EnlargeButton.Visibility = Visibility.Collapsed;
-            ShrinkButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
             EditButton.Visibility = Visibility.Collapsed;
         }

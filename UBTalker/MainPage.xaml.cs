@@ -36,7 +36,7 @@ namespace UBTalker
     {
         public const string CLIENT_ID = "UBTalker2013";
         public const string CLIENT_SECRET = "NIxPbADlIwuYYPn7xEZ43f64A96tr/h8C/FkGZSiKwY=";
-        public const int DEFAULT_CATEGORY = 999999;
+        public const int DEFAULT_CATEGORY = 1;
         private int category;
         public static string SpeakingLanguage;
         public static bool SingleSwitch;
@@ -63,6 +63,7 @@ namespace UBTalker
 
             Current.Col = new ObservableCollection<Button>();
             Current.Col.CollectionChanged += Current.Col_CollectionChanged;
+            category = DEFAULT_CATEGORY;
 
             /* Set up speech synthesizer */
             speech = new SpeechSynthesizer(CLIENT_ID, CLIENT_SECRET);
@@ -99,21 +100,30 @@ namespace UBTalker
             /* Set up database */
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
             db.CreateTable<Button>();
-            Load_Buttons(db);
             var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
-
-            if (b != null && b.BGImagePath != null)
+            if (b == null && category == DEFAULT_CATEGORY)
             {
-                try
+                /* Create default category */
+                db.Insert(new Button
                 {
-                    SetBackground(b.BGImagePath);
-                }
-                catch (Exception) { };
+                    Name = "Default",
+                    Text = "Category Default",
+                    Description = "Starting Category",
+                    ImagePath = "",
+                    Order = 0,
+                    ColorHex = Colors.Black.ToString(),
+                    Category = 999999,
+                    isFolder = true,
+                    BGImagePath = "",
+                    Language = MainPage.SpeakingLanguage
+                });
             }
 
             /* Set background image */
-            if (b != null && b.BGImagePath != null)
+            else if (b != null && b.BGImagePath != null)
                 SetBackground(b.BGImagePath);
+
+            Load_Buttons(db);
         }
 
 
@@ -478,13 +488,12 @@ namespace UBTalker
 
         private void AppBar_Loaded(object sender, RoutedEventArgs e)
         {
+            EditButton.Visibility = Visibility.Visible;
+
             Button selection = (Button)DynamicGrid.SelectedItem;
             if (selection != null)
             {
                 DeleteButton.Visibility = Visibility.Visible;
-
-                if (!selection.isFolder)
-                    EditButton.Visibility = Visibility.Visible;
             }
         }
 
@@ -496,7 +505,16 @@ namespace UBTalker
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(EditButtonPage), ((Button)DynamicGrid.SelectedItem).ID);
+            Button selection = (Button)DynamicGrid.SelectedItem;
+            if (selection != null)
+            {
+                if (selection.isFolder)
+                    Frame.Navigate(typeof(EditCategoryPage), ((Button)DynamicGrid.SelectedItem).ID);
+                else
+                    Frame.Navigate(typeof(EditButtonPage), ((Button)DynamicGrid.SelectedItem).ID);
+            }
+            else
+                Frame.Navigate(typeof(EditCategoryPage), category);
         }
 
         private void Load_Buttons(SQLiteConnection db)
@@ -512,7 +530,6 @@ namespace UBTalker
 
         private void Col_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Changed------");
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
             ObservableCollection<Button> list = Current.DynamicGrid.DataContext as ObservableCollection<Button>;
             if (list == null)

@@ -1,6 +1,6 @@
 ﻿<common:LayoutAwarePage
     x:Name="pageRoot"
-    x:Class="UBTalker.NewCategoryPage"
+    x:Class="UBTalker.EditCategoryPage"
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -37,7 +37,7 @@
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
         </Grid>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,0" Grid.Row="1" VerticalAlignment="Top" Width="1346" Height="618">
-            <TextBlock Text="New Category" Style="{StaticResource SubheaderTextStyle}" MaxHeight="60" Height="54" Margin="150,0,0,0"/>
+            <TextBlock Text="Modify Category" Style="{StaticResource SubheaderTextStyle}" MaxHeight="60" Height="54" Margin="150,0,0,0"/>
             <Grid>
                 <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed"/>
             </Grid>
@@ -49,12 +49,12 @@
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Description:" VerticalAlignment="Center" Height="28" Width="180" FontSize="20"/>
                 <TextBox x:Name="ButtonDescEntry" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Width="305" Height="28" Margin="0,6,10,5" />
             </Grid>
-            <Grid Margin="330,0">
+            <Grid x:Name="ImageEntry" Margin="330,0">
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Image:" VerticalAlignment="Center" Height="28" Width="180" FontSize="20"/>
                 <TextBox x:Name="ButtonImageEntry" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Width="305" Height="28" Margin="0,6,10,5" IsReadOnly="True" />
                 <Button x:Name="UIOpenFile1" Content="Open File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UIOpenFile_Click" Margin="430,0,0,0" RenderTransformOrigin="0.5,0.5" Width="100"/>
             </Grid>
-            <Grid Margin="330,0">
+            <Grid x:Name="ColorEntry" Margin="330,0">
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Color:" VerticalAlignment="Center" Height="28" Width="180" FontSize="20"/>
                 <ComboBox x:Name="ColorChoices" HorizontalAlignment="Center" Height="28" Width="305"  Margin="0,6,10,5">
                     <ComboBox.ItemTemplate>
@@ -76,7 +76,7 @@
                 <TextBox x:Name="BGImageEntry" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Width="305" Height="28" Margin="0,6,10,5" IsReadOnly="True" />
                 <Button x:Name="UIOpenFile2" Content="Open File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UIOpenFile_Click" Margin="430,0,0,0" RenderTransformOrigin="0.5,0.5" Width="100"/>
             </Grid>
-            <Button Content="Create Category" HorizontalAlignment="Center" x:Name="SpeakButton" Click="CreateButton" VerticalAlignment="Center" Height="50" Width="150" />
+            <Button Content="Save Category" HorizontalAlignment="Center" x:Name="SpeakButton" Click="CreateButton" VerticalAlignment="Center" Height="50" Width="150" />
         </StackPanel>
 
 

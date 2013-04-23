@@ -40,8 +40,7 @@ namespace UBTalker
         private int category;
         public static string SpeakingLanguage;
         public static bool SingleSwitch;
-        public static bool Whisper;
-        public static bool RightOnly;
+        public static int Whisper;
         public static DispatcherTimer Timer;
         public static MainPage Current;
         private ObservableCollection<Button> Col;
@@ -87,9 +86,7 @@ namespace UBTalker
                 {
                     SingleSwitch = (bool)settings.Values["single_switch"];
                     if (settings.Values.ContainsKey("whisper"))
-                        Whisper = (bool)settings.Values["whisper"];
-                    if (settings.Values.ContainsKey("right_only"))
-                        RightOnly = (bool)settings.Values["right_only"];
+                        Whisper = (int)settings.Values["whisper"];
                 }
 
                 /* Interval */
@@ -129,7 +126,7 @@ namespace UBTalker
                 else
                     Current.DynamicGrid.SelectedIndex++;
 
-                if (Whisper || RightOnly)
+                if (Whisper > 0)
                 {
                     Button selection = Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex] as Button;
                     Speak_String(selection.Text, selection.FileName, selection.ID, selection.Language, true);
@@ -191,22 +188,38 @@ namespace UBTalker
 
 
         /* Plays the given file. If the file does not exist, creates it */
-        private async void Speak_String(string text, string filename, int id, string lang, bool whisper)
+        private async void Speak_String(string text, string filename, int id, string lang, bool speak_whisper)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
             /* Set up Media Element */
-            if (whisper)
+            if (speak_whisper)
             {
-                if (Whisper)
-                    WhisperMediaElement.Volume = 0.2;
-                else
-                    WhisperMediaElement.Volume = 1;
+                switch (Whisper)
+                {
+                    /* Whisper */
+                    case 1:
+                        WhisperMediaElement.Volume = 0.15;
+                        WhisperMediaElement.Balance = 0;
+                        break;
 
-                if (RightOnly)
-                    WhisperMediaElement.Balance = 1;
-                else
-                    WhisperMediaElement.Balance = 0;
+                    /* Right-Only */
+                    case 2:
+                        WhisperMediaElement.Volume = 1;
+                        WhisperMediaElement.Balance = 1;
+                        break;
+
+                    /* Both */
+                    case 3:
+                        WhisperMediaElement.Volume = 0.15;
+                        WhisperMediaElement.Balance = 1;
+                        break;
+
+                    /* Silent */
+                    default:
+                        speak_whisper = false;      // Should not occur
+                        break;
+                }
             }
 
             /* Try to play the file */
@@ -217,7 +230,7 @@ namespace UBTalker
                 System.Diagnostics.Debug.WriteLine("Playing " + text + " from memory");
                 var stream = await myAudio.OpenAsync(FileAccessMode.Read);
 
-                if (whisper)
+                if (speak_whisper)
                     WhisperMediaElement.SetSource(stream, speech.MimeContentType);
                 else
                     SpeechMediaElement.SetSource(stream, speech.MimeContentType);
@@ -229,7 +242,7 @@ namespace UBTalker
                 if (ex is ArgumentNullException || ex is FileNotFoundException)
                 {
                     WaitProgressBar.Visibility = Visibility.Collapsed;
-                    Store_String(text, id, lang, whisper);
+                    Store_String(text, id, lang, speak_whisper);
                     WaitProgressBar.Visibility = Visibility.Visible;
                 }
                 else
@@ -242,7 +255,7 @@ namespace UBTalker
         }
 
         /* Gets the audio file and stores it */
-        private async void Store_String(string text, int index, string lang, bool whisper)
+        private async void Store_String(string text, int index, string lang, bool speak_whisper)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
@@ -250,7 +263,7 @@ namespace UBTalker
             var stream = await speech.GetSpeakStreamAsync(text, lang);
 
             // Reproduces the audio stream using a MediaElement.
-            if(Whisper)
+            if(speak_whisper)
                 WhisperMediaElement.SetSource(stream, speech.MimeContentType);
             else
                 SpeechMediaElement.SetSource(stream, speech.MimeContentType);

@@ -36,25 +36,25 @@
             <Button x:Name="backButton" Click="GoBack" IsEnabled="{Binding Frame.CanGoBack, ElementName=pageRoot}" Style="{StaticResource BackButtonStyle}"/>
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
         </Grid>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="183,0" Grid.Row="1" VerticalAlignment="Top" Width="1000" Height="497">
-            <TextBlock Text="Modify Button" Style="{StaticResource SubheaderTextStyle}" MaxHeight="60" Height="54"/>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,0" Grid.Row="1" VerticalAlignment="Top" Width="1346" Height="618">
+            <TextBlock Text="Modify Button" Style="{StaticResource SubheaderTextStyle}" MaxHeight="60" Height="54" Margin="150,0,0,0"/>
             <Grid>
                 <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" x:Name="WaitProgressBar" VerticalAlignment="Top" Visibility="Collapsed"/>
             </Grid>
-            <Grid Margin="0,0,0,0" Height="43">
+            <Grid Margin="330,0" Height="43">
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Name:" VerticalAlignment="Center" Height="28" Width="136" FontSize="20"/>
                 <TextBox x:Name="ButtonNameEntry" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Width="305" Height="28" Margin="0,6,10,5" />
             </Grid>
-            <Grid Margin="0,0,0,0">
+            <Grid Margin="330,0">
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Text:" VerticalAlignment="Center" Height="28" Width="136" FontSize="20"/>
                 <TextBox x:Name="ButtonTextEntry" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Width="305" Height="28" Margin="0,6,10,5" />
             </Grid>
-            <Grid Margin="0,0,0,0">
+            <Grid Margin="330,0">
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Image:" VerticalAlignment="Center" Height="28" Width="136" FontSize="20"/>
                 <TextBox x:Name="ButtonImageEntry" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Width="305" Height="28" Margin="0,6,10,5" IsReadOnly="True" />
-                <Button x:Name="UIOpenFile" Content="Open File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UIOpenFile_Click" Margin="676,3,215,2" RenderTransformOrigin="0.5,0.5" Width="109"/>
+                <Button x:Name="UIOpenFile" Content="Open File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UIOpenFile_Click" Margin="430,0,0,0" RenderTransformOrigin="0.5,0.5" Width="100"/>
             </Grid>
-            <Grid Margin="0,0,0,0">
+            <Grid Margin="330,0">
                 <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Color:" VerticalAlignment="Center" Height="28" Width="136" FontSize="20"/>
                 <ComboBox x:Name="ColorChoices" HorizontalAlignment="Center" Height="28" Width="305"  Margin="0,6,10,5">
                     <ComboBox.ItemTemplate>
@@ -71,7 +71,7 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </Grid>
-            <Button Content="Save Button" HorizontalAlignment="Center" x:Name="SpeakButton" Click="CreateButton" VerticalAlignment="Center" Height="59" Width="164" />
+            <Button Content="Save Button" HorizontalAlignment="Center" x:Name="SpeakButton" Click="CreateButton" VerticalAlignment="Center" Height="50" Width="150" />
         </StackPanel>
 
         <VisualStateManager.VisualStateGroups>

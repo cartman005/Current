@@ -101,8 +101,7 @@ namespace UBTalker.SettingsViews
                 }
 
             }
-            catch (Exception ex)
-            { }
+            catch (Exception) { }
 
         }
 
@@ -167,8 +166,7 @@ namespace UBTalker.SettingsViews
                         settings.Values.Add("timer_interval", MainPage.Timer.Interval);
                 }
             }
-            catch (Exception ex)
-            { }
+            catch (Exception) { }
         }
 
         private void WhisperSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -213,8 +211,7 @@ namespace UBTalker.SettingsViews
                         settings.Values.Add("right_only", MainPage.RightOnly);
                 }
             }
-            catch (Exception ex)
-            { }
+            catch (Exception) { }
         }
     }
 }

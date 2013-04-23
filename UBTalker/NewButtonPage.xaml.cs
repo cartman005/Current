@@ -129,7 +129,7 @@ namespace UBTalker
                 {
                     temp = db.Table<Button>().OrderBy(x => x.ID).Last();
                 }
-                catch (Exception ex) { }
+                catch (Exception) { }
 
                 int rowid = 1;
                 if (temp != null)

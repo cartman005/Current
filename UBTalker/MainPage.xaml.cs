@@ -111,7 +111,7 @@ namespace UBTalker
                 {
                     SetBackground(b.BGImagePath);
                 }
-                catch (Exception ex) { };
+                catch (Exception) { };
             }
 
             /* Set background image */
@@ -122,7 +122,7 @@ namespace UBTalker
 
         private void timer_Ticker(object sender, object e)
         {
-            if (Current.DynamicGrid.Items.Count > 0)
+            if (Current.DynamicGrid.Items.Count > 0 && Current.BottomAppBar.IsOpen == false)
             {
                 if (Current.DynamicGrid.SelectedIndex == Current.DynamicGrid.Items.Count - 1)
                     Current.DynamicGrid.SelectedIndex = 0;
@@ -132,7 +132,7 @@ namespace UBTalker
                 if (Whisper || RightOnly)
                 {
                     Button selection = Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex] as Button;
-                    Speak_String(selection.Text, selection.FileName, selection.ID, selection.Language, Whisper, RightOnly);
+                    Speak_String(selection.Text, selection.FileName, selection.ID, selection.Language, true);
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace UBTalker
                 brush.Stretch = Stretch.UniformToFill;
                 DynamicGrid.Background = brush;
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -191,19 +191,23 @@ namespace UBTalker
 
 
         /* Plays the given file. If the file does not exist, creates it */
-        private async void Speak_String(string text, string filename, int id, string lang, bool whisper, bool right_only)
+        private async void Speak_String(string text, string filename, int id, string lang, bool whisper)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
             /* Set up Media Element */
             if (whisper)
-                SpeechMediaElement.Volume = 0.2;
-            else
-                SpeechMediaElement.Volume = 1;
-            if (right_only)
-                SpeechMediaElement.Balance = 1;
-            else
-                SpeechMediaElement.Balance = 0;
+            {
+                if (Whisper)
+                    WhisperMediaElement.Volume = 0.2;
+                else
+                    WhisperMediaElement.Volume = 1;
+
+                if (RightOnly)
+                    WhisperMediaElement.Balance = 1;
+                else
+                    WhisperMediaElement.Balance = 0;
+            }
 
             /* Try to play the file */
             try
@@ -212,7 +216,11 @@ namespace UBTalker
                 var myAudio = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFileAsync(filename);
                 System.Diagnostics.Debug.WriteLine("Playing " + text + " from memory");
                 var stream = await myAudio.OpenAsync(FileAccessMode.Read);
-                SpeechMediaElement.SetSource(stream, speech.MimeContentType);
+
+                if (whisper)
+                    WhisperMediaElement.SetSource(stream, speech.MimeContentType);
+                else
+                    SpeechMediaElement.SetSource(stream, speech.MimeContentType);
             }
             /* Create the file */
             catch (Exception ex)
@@ -221,7 +229,7 @@ namespace UBTalker
                 if (ex is ArgumentNullException || ex is FileNotFoundException)
                 {
                     WaitProgressBar.Visibility = Visibility.Collapsed;
-                    Store_String(text, id, lang);
+                    Store_String(text, id, lang, whisper);
                     WaitProgressBar.Visibility = Visibility.Visible;
                 }
                 else
@@ -234,7 +242,7 @@ namespace UBTalker
         }
 
         /* Gets the audio file and stores it */
-        private async void Store_String(string text, int index, string lang)
+        private async void Store_String(string text, int index, string lang, bool whisper)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
 
@@ -242,7 +250,10 @@ namespace UBTalker
             var stream = await speech.GetSpeakStreamAsync(text, lang);
 
             // Reproduces the audio stream using a MediaElement.
-            SpeechMediaElement.SetSource(stream, speech.MimeContentType);
+            if(Whisper)
+                WhisperMediaElement.SetSource(stream, speech.MimeContentType);
+            else
+                SpeechMediaElement.SetSource(stream, speech.MimeContentType);
 
             WaitProgressBar.Visibility = Visibility.Collapsed;
 
@@ -267,10 +278,12 @@ namespace UBTalker
             /* Add filename to button's attributes */
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
-                var b = db.Table<Button>().FirstOrDefault(x => x.ID == index);
-                b.FileName = fileName;
-                db.Update(b);
-                Load_Buttons(db);
+                var b = Col.FirstOrDefault(x => x.ID == index);
+                if (b != null)
+                {
+                    b.FileName = fileName;
+                    db.Update(b);
+                }
             }
 
         }
@@ -287,9 +300,9 @@ namespace UBTalker
                         if (_Item.isFolder)
                             Frame.Navigate(typeof(MainPage), _Item.ID);
                         else
-                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false, false);
+                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
                     }
-                    catch (Exception ex) { }
+                    catch (Exception) { }
                 }
             }
         }
@@ -308,16 +321,13 @@ namespace UBTalker
             if (_Item.isFolder)
                 Frame.Navigate(typeof(MainPage), _Item.ID);
             else
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false, false);
+                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
         }
 
         /* Switches to the new button screen */
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            // If is a button
             Frame.Navigate(typeof(NewButtonPage), category);
-            //else
-            //Frame.Navigate(typeof(MainPage), b.Category);
         }
 
         /* Switches to the new category screen */
@@ -377,7 +387,7 @@ namespace UBTalker
                     DeleteItem(b);
                 }
                 db.Delete(DynamicGrid.SelectedItem);
-                Load_Buttons(db);
+                Col.Remove(DynamicGrid.SelectedItem as Button);
                 this.BottomAppBar.IsOpen = false;
             }
         }
@@ -443,7 +453,7 @@ namespace UBTalker
                         {
                             SetBackground(b.BGImagePath);
                         }
-                        catch (Exception ex) { };
+                        catch (Exception) { };
                     }
 
                     /* Set background image */
@@ -577,7 +587,7 @@ namespace UBTalker
                 var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
                 image.SetSource(stream);
             }
-            catch (FileNotFoundException ex) { }
+            catch (FileNotFoundException) { }
         }
     }
 }

@@ -61,6 +61,7 @@
             <Button x:Name="backButton" Click="GoBack" IsEnabled="{Binding Frame.CanGoBack, ElementName=pageRoot}" Style="{StaticResource BackButtonStyle}"/>
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
             <MediaElement x:Name="SpeechMediaElement"></MediaElement>
+            <MediaElement x:Name="WhisperMediaElement"></MediaElement>
         </Grid>
 
         <Grid Grid.Row="1" >

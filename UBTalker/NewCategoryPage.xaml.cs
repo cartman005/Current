@@ -93,7 +93,7 @@ namespace UBTalker
             {
                 await file.CopyAsync(ApplicationData.Current.LocalFolder, file.Name);
             }
-            catch (System.Exception ex)
+            catch (Exception)
             {
             }
 
@@ -132,7 +132,7 @@ namespace UBTalker
                 {
                     temp = db.Table<Button>().OrderBy(x => x.ID).Last();
                 }
-                catch (Exception ex) { }
+                catch (Exception) { }
 
                 int rowid = 1;
                 if (temp != null)
@@ -141,13 +141,15 @@ namespace UBTalker
                 db.Insert(new Button
                 {
                     Name = ButtonNameEntry.Text,
+                    Text = "Category " + ButtonNameEntry.Text,
                     Description = ButtonDescEntry.Text,
                     ImagePath = ButtonImageEntry.Text,
                     Order = rowid,
                     ColorHex = selection.ToString(),
                     Category = category,
                     isFolder = true,
-                    BGImagePath = BGImageEntry.Text
+                    BGImagePath = BGImageEntry.Text,
+                    Language = MainPage.SpeakingLanguage
                 });
             }
 

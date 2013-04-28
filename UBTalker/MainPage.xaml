@@ -31,12 +31,17 @@
         </Style>
         <Style x:Key="NewFolderAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="NewFolderAppBarButtonStyle"/>
-            <Setter Property="AutomationProperties.Name" Value="New Category"/>
+            <Setter Property="AutomationProperties.Name" Value="New category"/>
             <Setter Property="Content" Value="&#xE1DA;"/>
         </Style>
         <Style x:Key="AddButtonAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AddAppBarButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="AddButtonAppBarButtonStyle"/>
-            <Setter Property="AutomationProperties.Name" Value="New Button"/>
+            <Setter Property="AutomationProperties.Name" Value="New button"/>
+        </Style>
+        <Style x:Key="ClearButtonAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AddAppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="ClearButtonAppBarButtonStyle"/>
+            <Setter Property="AutomationProperties.Name" Value="Clear selection"/>
+            <Setter Property="Content" Value="&#xE26A;"/>
         </Style>
     </Page.Resources>
 
@@ -131,8 +136,9 @@
     <Page.BottomAppBar>
         <AppBar Loaded="AppBar_Loaded" Unloaded="AppBar_Unloaded">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="EditButton" Click="EditButton_Click" Visibility="Collapsed" Style="{StaticResource EditAppBarButtonStyle}"/>
+                <Button x:Name="EditButton" Click="EditButton_Click" Visibility="Visible" Style="{StaticResource EditAppBarButtonStyle}"/>
                 <Button x:Name="DeleteButton" Click="DeleteButton_Click" Visibility="Collapsed" Style="{StaticResource DeleteAppBarButtonStyle}"/>
+                <Button x:Name="ClearButton" Click="DeselectButton_Click" Visibility="Collapsed" Style="{StaticResource ClearButtonAppBarButtonStyle}"/>
             </StackPanel>
         </AppBar>
     </Page.BottomAppBar>

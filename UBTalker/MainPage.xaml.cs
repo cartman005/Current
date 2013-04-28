@@ -493,6 +493,11 @@ namespace UBTalker
             }
         }
 
+        /* 
+         * Called when a page is first created and when it is navigated to.
+         * Sets the current page and category.
+         * Loads the buttons for the category into the Grid and sets the background image.
+         */
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -533,23 +538,32 @@ namespace UBTalker
             }
         }
 
+        /* Shows or hides the Delete button from the bottom AppBar depending on if an item is selected */
         private void AppBar_Loaded(object sender, RoutedEventArgs e)
         {
-            EditButton.Visibility = Visibility.Visible;
+            //EditButton.Visibility = Visibility.Visible;
 
             Button selection = (Button)DynamicGrid.SelectedItem;
             if (selection != null)
             {
+                ClearButton.Visibility = Visibility.Visible;
                 DeleteButton.Visibility = Visibility.Visible;
             }
         }
 
+        /* Resets the visibility of items in the bottom AppBar when it is closed */
         private void AppBar_Unloaded(object sender, RoutedEventArgs e)
         {
+            ClearButton.Visibility = Visibility.Collapsed;
             DeleteButton.Visibility = Visibility.Collapsed;
-            EditButton.Visibility = Visibility.Collapsed;
+            //EditButton.Visibility = Visibility.Collapsed;
         }
 
+        /*
+         * Handles EditButton clicks from the bottom AppBar.
+         * If a Grid item is selected, navigates to the edit page for that item.
+         * If no item is selected, navigates to the edit page for the current category.
+         */
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             Button selection = (Button)DynamicGrid.SelectedItem;
@@ -594,6 +608,11 @@ namespace UBTalker
                 list[i].Order = i;
             }
             db.UpdateAll(list);
+        }
+
+        private void DeselectButton_Click(object sender, RoutedEventArgs e)
+        {
+            Current.DynamicGrid.SelectedItem = null;
         }
     }
 

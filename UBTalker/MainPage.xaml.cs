@@ -123,7 +123,7 @@ namespace UBTalker
             else if (b != null && b.BGImagePath != null)
                 SetBackground(b.BGImagePath);
 
-            Load_Buttons(db);
+            Load_Buttons(db, false);
         }
 
         /*
@@ -519,7 +519,8 @@ namespace UBTalker
                 
                 if (this.DataContext != temp)
                 {
-                    Load_Buttons(db);
+                    bool newPage = (e.SourcePageType == typeof(MainPage)) && (e.NavigationMode == NavigationMode.New);
+                    Load_Buttons(db, newPage);
                     var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
 
                     if (b != null && b.BGImagePath != null)
@@ -580,16 +581,25 @@ namespace UBTalker
 
         /*
          * Loads Buttons from the given database, adds them to the Button collection and sets them to the Grid.
+         * If there are no buttons to load, automatically opens the New Button creation page if the showNewButton option is true.
          */
-        private void Load_Buttons(SQLiteConnection db)
+        private async void Load_Buttons(SQLiteConnection db, bool showNewButton)
         {
             Current.Col.Clear();
             var list = db.Table<Button>().Where(x => x.Category == category).OrderBy(x => x.Order).ToList();
-            foreach (var i in list)
+
+            if (list.Count == 0 && showNewButton)
             {
-                Current.Col.Add(i);
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Frame.Navigate(typeof(NewButtonPage), Current.category));
             }
-            this.DataContext = Current.Col;
+            else
+            {
+                foreach (var i in list)
+                {
+                    Current.Col.Add(i);
+                }
+                this.DataContext = Current.Col;
+            }
         }
 
         /*

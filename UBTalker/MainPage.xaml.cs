@@ -519,7 +519,9 @@ namespace UBTalker
                 
                 if (this.DataContext != temp)
                 {
+                    /* Decide if the new button page should be shown if the category is empty*/
                     bool newPage = (e.SourcePageType == typeof(MainPage)) && (e.NavigationMode == NavigationMode.New);
+
                     Load_Buttons(db, newPage);
                     var b = db.Table<Button>().FirstOrDefault(x => x.ID == category);
 

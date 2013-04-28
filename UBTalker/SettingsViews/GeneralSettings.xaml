@@ -25,11 +25,11 @@
                 <ComboBoxItem Content="5 seconds" Tag="5" />
                 <ComboBoxItem Content="10 seconds" Tag="5" />
             </ComboBox>
-            <TextBlock x:Name="WhisperLabel" Style="{StaticResource ItemTextStyle}" Visibility="Collapsed" HorizontalAlignment="Left" Height="34" Margin="22,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Timer Sound Output"/>
+            <TextBlock x:Name="WhisperLabel" Style="{StaticResource ItemTextStyle}" Visibility="Collapsed" HorizontalAlignment="Left" Height="34" Margin="31,2,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Timer sound output" Width="162"/>
             <ComboBox x:Name="WhisperSelection" Visibility="Collapsed" SelectionChanged="WhisperSelection_SelectionChanged" Margin="22,0,152,0" SelectedIndex="0">
                 <ComboBoxItem Content="Silent" />
                 <ComboBoxItem Content="Whisper" />
-                <ComboBoxItem Content="Right Output Only" />
+                <ComboBoxItem Content="Right output only" />
                 <ComboBoxItem Content="Both" />
             </ComboBox>
         </StackPanel>

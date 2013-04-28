@@ -126,7 +126,13 @@ namespace UBTalker
             Load_Buttons(db);
         }
 
-
+        /*
+         * Used for single switch mode.
+         * Increments the selected item by one index.
+         * If Whisper mode is on, plays the text associated with that item.
+         * 
+         * If the bottom AppBar is open, does nothing to avoid getting in the way of options.
+         */
         private void timer_Ticker(object sender, object e)
         {
             if (Current.DynamicGrid.Items.Count > 0 && Current.BottomAppBar.IsOpen == false)
@@ -264,7 +270,7 @@ namespace UBTalker
             }
         }
 
-        /* Gets the audio file and stores it */
+        /* Gets the audio stream and stores it as a file */
         private async void Store_String(string text, int index, string lang, bool speak_whisper)
         {
             WaitProgressBar.Visibility = Visibility.Visible;
@@ -311,40 +317,42 @@ namespace UBTalker
 
         }
 
-
-        private void ItemClick(CoreWindow sender, KeyEventArgs args)
+        /*
+         * Helper function for when items selected with single-switch.
+         */
+        private void SingleSwitchPress(CoreWindow sender, KeyEventArgs args)
         {
             if (this.Frame.CurrentSourcePageType.Equals(typeof(MainPage))) {
                 if (args.VirtualKey == VirtualKey.A)
                 {
                     try
                     {
-                        Button _Item = (Button)Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex];
-                        if (_Item.isFolder)
-                            Frame.Navigate(typeof(MainPage), _Item.ID);
-                        else
-                            Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
+                        HandleClick((Button)Current.DynamicGrid.Items[Current.DynamicGrid.SelectedIndex]);
                     }
                     catch (Exception) { }
                 }
             }
         }
 
-        /// <summary>
-        /// Invoked when an item within a group is clicked.
-        /// </summary>
-        /// <param name="sender">The GridView (or ListView when the application is snapped)
-        /// displaying the item clicked.</param>
-        /// <param name="e">Event data that describes the item clicked.</param>
+        /*
+         * Helper function for when items pressed/clicked with touch/mouse.
+         */
         void ItemView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            // Navigate to the appropriate destination page, configuring the new page
-            // by passing required information as a navigation parameter
-            Button _Item = (Button)e.ClickedItem;
-            if (_Item.isFolder)
-                Frame.Navigate(typeof(MainPage), _Item.ID);
+            HandleClick((Button)e.ClickedItem);
+        }
+
+        /*
+        * Handles clicks on Grid items.
+        * If a category, navigate to a new page.
+        * If a button, try to speak associated text.
+        */
+        void HandleClick(Button item)
+        {
+            if (item.isFolder)
+                Frame.Navigate(typeof(MainPage), item.ID);
             else
-                Speak_String(_Item.Text, _Item.FileName, _Item.ID, _Item.Language, false);
+                Speak_String(item.Text, item.FileName, item.ID, item.Language, false);
         }
 
         /* Switches to the new button screen */
@@ -369,27 +377,19 @@ namespace UBTalker
             DeleteItem((Button)DynamicGrid.SelectedItem);
         }
 
+        /*
+         * Deletes an item by removing it from the database and Grid.
+         * Also tries to delete associated image and sound files.
+         * If it is a category, recursively deletes all times contained in category
+         */
         private async void DeleteItem(Button button)
         {
             StorageFile file;
+
+            /* Delete image file */
             try
             {
-                file = await ApplicationData.Current.LocalFolder.GetFileAsync((button).ImagePath);
-                await file.DeleteAsync();
-            }
-            catch (Exception ex)
-            {
-                if (ex is FileNotFoundException ||
-                    ex is ArgumentNullException)
-                { }
-                else
-                {
-                    throw;
-                }
-            }
-            try
-            {
-                file = await ApplicationData.Current.LocalFolder.GetFileAsync((button).FileName);
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync(button.ImagePath);
                 await file.DeleteAsync();
             }
             catch (Exception ex)
@@ -403,15 +403,54 @@ namespace UBTalker
                 }
             }
 
-            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
+            /* Delete sound file */
+            try
             {
-                foreach (Button b in db.Table<Button>().Where(x => x.Category == button.ID).ToList())
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync(button.FileName);
+                await file.DeleteAsync();
+            }
+            catch (Exception ex)
+            {
+                if (ex is FileNotFoundException ||
+                    ex is ArgumentNullException)
+                { }
+                else
                 {
-                    DeleteItem(b);
+                    throw;
                 }
-                db.Delete(DynamicGrid.SelectedItem);
-                Col.Remove(DynamicGrid.SelectedItem as Button);
-                this.BottomAppBar.IsOpen = false;
+            }
+
+            /* Category */
+            if (button.isFolder)
+            {
+                /* Delete background image file */
+                try
+                {
+                    file = await ApplicationData.Current.LocalFolder.GetFileAsync(button.BGImagePath);
+                    await file.DeleteAsync();
+                }
+                catch (Exception ex)
+                {
+                    if (ex is FileNotFoundException ||
+                        ex is ArgumentNullException)
+                    { }
+                    else
+                    {
+                        throw;
+                    }
+                }
+
+                /* Delete sub items */
+                using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
+                {
+                    foreach (Button b in db.Table<Button>().Where(x => x.Category == button.ID).ToList())
+                    {
+                        DeleteItem(b);
+                    }
+                    db.Delete(DynamicGrid.SelectedItem);
+                    Col.Remove(DynamicGrid.SelectedItem as Button);
+                    this.BottomAppBar.IsOpen = false;
+                }
             }
         }
 
@@ -423,9 +462,15 @@ namespace UBTalker
             }
         }
 
+        /*
+         * Turns single-switch functionality on/off.
+         * Sets up the associated Timer and event handler
+         */
         public void SetSwitch(bool Switch)
         {
             SingleSwitch = Switch;
+
+            /* Turn on */
             if (SingleSwitch)
             {
                 if (!Timer.IsEnabled)
@@ -433,16 +478,18 @@ namespace UBTalker
                     Timer.Start();
                     if (Current.DynamicGrid.Items.Count > 0)
                         Current.DynamicGrid.SelectedIndex = 0;
-                    Window.Current.CoreWindow.KeyDown += ItemClick;
+                    Window.Current.CoreWindow.KeyDown += SingleSwitchPress;
                 }
             }
+
+            /* Turn off */
             else {
                 if (Timer.IsEnabled)
                 {
                     Timer.Stop();
                     Current.DynamicGrid.SelectedItem = null;
                 }
-                Window.Current.CoreWindow.KeyDown -= ItemClick;
+                Window.Current.CoreWindow.KeyDown -= SingleSwitchPress;
             }
         }
 
@@ -517,6 +564,9 @@ namespace UBTalker
                 Frame.Navigate(typeof(EditCategoryPage), category);
         }
 
+        /*
+         * Loads Buttons from the given database, adds them to the Button collection and sets them to the Grid.
+         */
         private void Load_Buttons(SQLiteConnection db)
         {
             Current.Col.Clear();
@@ -528,6 +578,10 @@ namespace UBTalker
             this.DataContext = Current.Col;
         }
 
+        /*
+         * Called when the grid of Buttons is changed, specifically the order.
+         * Loads the order of the Buttons and updates them in the database.
+         */
         private void Col_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite"));
@@ -589,12 +643,14 @@ namespace UBTalker
 
     public static class StringExt
     {
+        /* Shortens the given string to the maximum string length */
         public static string Truncate(this string value, int maxLength)
         {
             return value.Length <= maxLength ? value : value.Substring(0, maxLength);
         }
     }
 
+    /* Returns the image associated with the file name for use in binding */
     public class StringToImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, String language)

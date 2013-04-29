@@ -439,18 +439,19 @@ namespace UBTalker
                         throw;
                     }
                 }
+            }
 
-                /* Delete sub items */
-                using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
+            /* Delete item and sub items from database */
+            using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
+            {
+                /* Recursive for sub items */
+                foreach (Button b in db.Table<Button>().Where(x => x.Category == button.ID).ToList())
                 {
-                    foreach (Button b in db.Table<Button>().Where(x => x.Category == button.ID).ToList())
-                    {
-                        DeleteItem(b);
-                    }
-                    db.Delete(DynamicGrid.SelectedItem);
-                    Col.Remove(DynamicGrid.SelectedItem as Button);
-                    this.BottomAppBar.IsOpen = false;
+                    DeleteItem(b);
                 }
+                db.Delete(DynamicGrid.SelectedItem);
+                Col.Remove(DynamicGrid.SelectedItem as Button);
+                this.BottomAppBar.IsOpen = false;
             }
         }
 

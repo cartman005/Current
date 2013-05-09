@@ -94,7 +94,7 @@
                                 <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" Opacity="0.8" />
                             </StackPanel.Background>
                             <Image Width="40" Height="40" Source="Assets/folder.png" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{Binding Path=isFolder, Converter={StaticResource BoolConverter}}"></Image>
-                            <TextBlock FontSize="15" Margin="10">
+                            <TextBlock FontSize="15" Margin="10" Foreground="{Binding FontColor}" FontWeight="Bold">
                                 <Run Text="{Binding Name}"/>
                             </TextBlock>
                         </StackPanel>

@@ -32,6 +32,9 @@ namespace UBTalker
         /* Hexadecimal value of the button's color */
         public string ColorHex { get; set; }
 
+        /* Hexadecimal value of the button font's color */
+        public string FontColor { get; set; }
+
         /* Audio file filename */
         public string FileName { get; set; }
 

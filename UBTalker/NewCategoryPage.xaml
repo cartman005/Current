@@ -55,8 +55,25 @@
                 <Button x:Name="UIOpenFile1" Content="Open File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="UIOpenFile_Click" Margin="430,0,0,0" RenderTransformOrigin="0.5,0.5" Width="100"/>
             </Grid>
             <Grid Margin="330,0">
-                <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Color:" VerticalAlignment="Center" Height="28" Width="180" FontSize="20"/>
-                <ComboBox x:Name="ColorChoices" HorizontalAlignment="Center" Height="28" Width="305"  Margin="0,6,10,5">
+                <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Button color:" VerticalAlignment="Center" Height="28" Width="136" FontSize="20"/>
+                <ComboBox x:Name="ButtonColorChoices" HorizontalAlignment="Center" Height="28" Width="305"  Margin="0,6,10,5">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Rectangle Width="35" Height="20" Fill="{Binding Name}" Margin="5,0"/>
+                                <TextBlock Grid.Column="1" Margin="10,0,0,0" Text="{Binding Name}" Foreground="Black"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+            <Grid Margin="330,0">
+                <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Font color:" VerticalAlignment="Center" Height="28" Width="136" FontSize="20"/>
+                <ComboBox x:Name="FontColorChoices" HorizontalAlignment="Center" Height="28" Width="305"  Margin="0,6,10,5">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <Grid>

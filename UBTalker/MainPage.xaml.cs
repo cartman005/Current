@@ -112,6 +112,7 @@ namespace UBTalker
                     ImagePath = "",
                     Order = 0,
                     ColorHex = Colors.Black.ToString(),
+                    FontColor = Colors.White.ToString(),
                     Category = 999999,
                     isFolder = true,
                     BGImagePath = "",
@@ -664,6 +665,9 @@ namespace UBTalker
     {
         public static Color GetColorFromHexa(string hexaColor)
         {
+            if (string.IsNullOrWhiteSpace(hexaColor))
+                return Colors.White;
+
             return Color.FromArgb(
                     Convert.ToByte(hexaColor.Substring(1, 2), 16),
                     Convert.ToByte(hexaColor.Substring(3, 2), 16),

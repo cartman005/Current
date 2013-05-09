@@ -37,16 +37,30 @@ namespace UBTalker
 
             this.InitializeComponent();
 
-            ColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });            
-            ColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
-            ColorChoices.SelectedIndex = 0;
+            // Find a better way to do this?
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });            
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
+            ButtonColorChoices.SelectedIndex = 0;
+
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
+            FontColorChoices.SelectedIndex = 1;
         }
 
         /// <summary>
@@ -114,15 +128,32 @@ namespace UBTalker
                 return;
             }
 
-            Color selection;
-            /* Get selected color */
-            if (ColorChoices.SelectedIndex != -1)
+            Button newButton = new Button
             {
-                var pi = ColorChoices.SelectedItem as ColorChoice;
-                selection = pi.Color;
+                Name = ButtonNameEntry.Text,
+                Text = "Category " + ButtonNameEntry.Text,
+                Description = ButtonDescEntry.Text,
+                ImagePath = ButtonImageEntry.Text,
+                Category = category,
+                isFolder = true,
+                BGImagePath = BGImageEntry.Text,
+                Language = MainPage.SpeakingLanguage
+            };
+
+            /* Get selected colors */
+            if (ButtonColorChoices.SelectedIndex != -1)
+            {
+                newButton.ColorHex = (ButtonColorChoices.SelectedItem as ColorChoice).Color.ToString();
             }
             else
-                selection = Colors.Black;
+                newButton.ColorHex = Colors.Black.ToString();
+
+            if (FontColorChoices.SelectedIndex != -1)
+            {
+                newButton.FontColor = (FontColorChoices.SelectedItem as ColorChoice).Color.ToString();
+            }
+            else
+                newButton.FontColor = Colors.White.ToString();
 
             /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
@@ -138,19 +169,9 @@ namespace UBTalker
                 if (temp != null)
                     rowid = temp.ID + 1;
 
-                db.Insert(new Button
-                {
-                    Name = ButtonNameEntry.Text,
-                    Text = "Category " + ButtonNameEntry.Text,
-                    Description = ButtonDescEntry.Text,
-                    ImagePath = ButtonImageEntry.Text,
-                    Order = rowid,
-                    ColorHex = selection.ToString(),
-                    Category = category,
-                    isFolder = true,
-                    BGImagePath = BGImageEntry.Text,
-                    Language = MainPage.SpeakingLanguage
-                });
+                newButton.Order = rowid;
+
+                db.Insert(newButton);
             }
 
             this.Frame.GoBack();

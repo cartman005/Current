@@ -37,16 +37,28 @@ namespace UBTalker
 
             this.InitializeComponent();
 
-            ColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
-            ColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
-            ColorChoices.SelectedIndex = 0;
+            // Find a better way to do this?
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
+            ButtonColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
+
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Black", Color = Colors.Black });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "White", Color = Colors.White });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Red", Color = Colors.Red });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Blue", Color = Colors.Blue });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Green", Color = Colors.Green });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Yellow", Color = Colors.Yellow });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Gray", Color = Colors.Gray });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Purple", Color = Colors.Purple });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Orange", Color = Colors.Orange });
+            FontColorChoices.Items.Add(new ColorChoice { Name = "Brown", Color = Colors.Brown });
         }
 
         /// <summary>
@@ -109,15 +121,20 @@ namespace UBTalker
 
             WaitProgressBar.Visibility = Visibility.Visible;
 
-            Color selection;
-            /* Get selected color */
-            if (ColorChoices.SelectedIndex != -1)
+            /* Get selected colors */
+            if (ButtonColorChoices.SelectedIndex != -1)
             {
-                var pi = ColorChoices.SelectedItem as ColorChoice;
-                selection = pi.Color;
+                ModButton.ColorHex = (ButtonColorChoices.SelectedItem as ColorChoice).Color.ToString();
             }
             else
-                selection = Colors.Black;
+                ModButton.ColorHex = Colors.Black.ToString();
+
+            if (FontColorChoices.SelectedIndex != -1)
+            {
+                ModButton.FontColor = (FontColorChoices.SelectedItem as ColorChoice).Color.ToString();
+            }
+            else
+                ModButton.FontColor = Colors.White.ToString();
 
             /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
@@ -130,7 +147,6 @@ namespace UBTalker
                 }
                 ModButton.ImagePath = ButtonImageEntry.Text;
                 ModButton.BGImagePath = BGImageEntry.Text;
-                ModButton.ColorHex = selection.ToString();
                 db.Update(ModButton);
             }
 
@@ -140,7 +156,7 @@ namespace UBTalker
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            string ColorHex;
+            string ColorHex, FontColor;
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 ModButton = db.Table<Button>().FirstOrDefault(x => x.ID == (int)e.Parameter);
@@ -149,35 +165,62 @@ namespace UBTalker
                 ButtonDescEntry.Text = ModButton.Description;
                 BGImageEntry.Text = ModButton.BGImagePath;
                 ColorHex = ModButton.ColorHex;
+                FontColor = ModButton.FontColor;
             }
+
+            /* Hide options that can't be changed for the default category */
             if (ModButton.ID == MainPage.DEFAULT_CATEGORY)
             {
                 ButtonNameEntry.IsReadOnly = true;
                 ButtonDescEntry.IsReadOnly = true;
                 ImageEntry.Visibility = Visibility.Collapsed;
-                ColorEntry.Visibility = Visibility.Collapsed;
+                ButtonColorEntry.Visibility = Visibility.Collapsed;
+                FontColorEntry.Visibility = Visibility.Collapsed;
             }
             else
             {
-                /* Set color selectien */
-                if (ColorHex == Colors.Red.ToString())
-                    ColorChoices.SelectedIndex = 1;
+                /* Set color selections */
+                if (ColorHex == Colors.White.ToString())
+                    ButtonColorChoices.SelectedIndex = 1;
+                else if (ColorHex == Colors.Red.ToString())
+                    ButtonColorChoices.SelectedIndex = 2;
                 else if (ColorHex == Colors.Blue.ToString())
-                    ColorChoices.SelectedIndex = 2;
+                    ButtonColorChoices.SelectedIndex = 3;
                 else if (ColorHex == Colors.Green.ToString())
-                    ColorChoices.SelectedIndex = 3;
+                    ButtonColorChoices.SelectedIndex = 4;
                 else if (ColorHex == Colors.Yellow.ToString())
-                    ColorChoices.SelectedIndex = 4;
+                    ButtonColorChoices.SelectedIndex = 5;
                 else if (ColorHex == Colors.Gray.ToString())
-                    ColorChoices.SelectedIndex = 5;
+                    ButtonColorChoices.SelectedIndex = 6;
                 else if (ColorHex == Colors.Purple.ToString())
-                    ColorChoices.SelectedIndex = 6;
+                    ButtonColorChoices.SelectedIndex = 7;
                 else if (ColorHex == Colors.Orange.ToString())
-                    ColorChoices.SelectedIndex = 7;
+                    ButtonColorChoices.SelectedIndex = 8;
                 else if (ColorHex == Colors.Brown.ToString())
-                    ColorChoices.SelectedIndex = 8;
+                    ButtonColorChoices.SelectedIndex = 9;
                 else
-                    ColorChoices.SelectedIndex = 0;
+                    ButtonColorChoices.SelectedIndex = 0;               // Default to black
+
+                if (FontColor == Colors.Black.ToString())
+                    FontColorChoices.SelectedIndex = 0;
+                else if (FontColor == Colors.Red.ToString())
+                    FontColorChoices.SelectedIndex = 2;
+                else if (FontColor == Colors.Blue.ToString())
+                    FontColorChoices.SelectedIndex = 3;
+                else if (FontColor == Colors.Green.ToString())
+                    FontColorChoices.SelectedIndex = 4;
+                else if (FontColor == Colors.Yellow.ToString())
+                    FontColorChoices.SelectedIndex = 5;
+                else if (FontColor == Colors.Gray.ToString())
+                    FontColorChoices.SelectedIndex = 6;
+                else if (FontColor == Colors.Purple.ToString())
+                    FontColorChoices.SelectedIndex = 7;
+                else if (FontColor == Colors.Orange.ToString())
+                    FontColorChoices.SelectedIndex = 8;
+                else if (FontColor == Colors.Brown.ToString())
+                    FontColorChoices.SelectedIndex = 9;
+                else
+                    FontColorChoices.SelectedIndex = 1;                 // Default to white
             }
         }
     }

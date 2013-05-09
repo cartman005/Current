@@ -79,7 +79,7 @@
                           Padding="50,50,50,50" CanReorderItems="True" >
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapGrid HorizontalChildrenAlignment="Left" VerticalChildrenAlignment="Top" />
+                    <WrapGrid HorizontalChildrenAlignment="Left" VerticalChildrenAlignment="Top" Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>

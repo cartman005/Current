@@ -12,6 +12,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -100,14 +101,44 @@ namespace UBTalker
             ButtonImageEntry.Text = file.Name;
         }
 
-        private void CreateButton(object sender, RoutedEventArgs e)
+        private async void UIOpenSoundFile_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
+
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.ViewMode = PickerViewMode.List;
+            picker.FileTypeFilter.Add(".mp3");
+            picker.FileTypeFilter.Add(".wav");
+            picker.FileTypeFilter.Add(".mp4");
+            picker.FileTypeFilter.Add(".m4a");
+
+
+            var file = await picker.PickSingleFileAsync();
+            if (file == null) return;
+
+            try
+            {
+                await file.CopyAsync(ApplicationData.Current.LocalFolder, file.Name);
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            }
+
+            SoundFileEntry.Text = file.Name;
+        } 
+
+        private async void CreateButton(object sender, RoutedEventArgs e)
         {
 
             WaitProgressBar.Visibility = Visibility.Visible;
 
-            /* Speak string */
-            if (string.IsNullOrWhiteSpace(ButtonTextEntry.Text) || string.IsNullOrWhiteSpace(ButtonNameEntry.Text)) {
+            // Check that button text or sound file is entered
+            // Name should be allowed to be left blank
+            if ((SoundFileToggle.IsOn && string.IsNullOrWhiteSpace(SoundFileEntry.Text)) || (!SoundFileToggle.IsOn && string.IsNullOrWhiteSpace(ButtonTextEntry.Text))) {
                 WaitProgressBar.Visibility = Visibility.Collapsed;
+                MessageDialog dialog = new MessageDialog("You must enter a string to be spoken or provide your own sound file", "UB Talker");
+                await dialog.ShowAsync();
                 return;
             }
 
@@ -131,21 +162,28 @@ namespace UBTalker
                 }
                 catch (Exception) { }
 
+                // Set the row ID based on the last entered rowID
                 int rowid = 1;
                 if (temp != null)
                     rowid = temp.ID + 1;
 
-                db.Insert(new Button
+                Button newButton = new Button
                 {
                     Name = ButtonNameEntry.Text,
-                    Text = ButtonTextEntry.Text,
                     ImagePath = ButtonImageEntry.Text,
                     Order = rowid,
                     ColorHex = selection.ToString(),
                     Category = category,
                     isFolder = false,
                     Language = MainPage.SpeakingLanguage
-                });
+                };
+
+                if (SoundFileToggle.IsOn)
+                    newButton.FileName = SoundFileEntry.Text;
+                else
+                    newButton.Text = ButtonTextEntry.Text;                    
+
+                db.Insert(newButton);
                 System.Diagnostics.Debug.WriteLine("The category for the new button is " + category);
             }
 
@@ -156,7 +194,22 @@ namespace UBTalker
         {
             base.OnNavigatedTo(e);
             category = (int) e.Parameter;
-        } 
+        }
+
+        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (SoundFileToggle.IsOn)
+            {
+                SoundClipGrid.Visibility = Visibility.Visible;
+                ButtonTextGrid.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SoundClipGrid.Visibility = Visibility.Collapsed;
+                ButtonTextGrid.Visibility = Visibility.Visible;
+            }
+
+        }
     }
 
     public class ColorChoice

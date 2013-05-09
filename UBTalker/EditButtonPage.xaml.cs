@@ -12,6 +12,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -100,15 +101,45 @@ namespace UBTalker
             ButtonImageEntry.Text = file.Name;
         }
 
-        private void CreateButton(object sender, RoutedEventArgs e)
+        private async void UIOpenSoundFile_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
+
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.ViewMode = PickerViewMode.List;
+            picker.FileTypeFilter.Add(".mp3");
+            picker.FileTypeFilter.Add(".wav");
+            picker.FileTypeFilter.Add(".mp4");
+            picker.FileTypeFilter.Add(".m4a");
+
+
+            var file = await picker.PickSingleFileAsync();
+            if (file == null) return;
+
+            try
+            {
+                await file.CopyAsync(ApplicationData.Current.LocalFolder, file.Name);
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            }
+
+            SoundFileEntry.Text = file.Name;
+        }
+
+        private async void CreateButton(object sender, RoutedEventArgs e)
         {
 
             WaitProgressBar.Visibility = Visibility.Visible;
 
-            /* Speak string */
-            if (string.IsNullOrWhiteSpace(ButtonTextEntry.Text) || string.IsNullOrWhiteSpace(ButtonNameEntry.Text))
+            // Check that button text or sound file is entered
+            // Name should be allowed to be left blank
+            if ((SoundFileToggle.IsOn && string.IsNullOrWhiteSpace(SoundFileEntry.Text)) || (!SoundFileToggle.IsOn && string.IsNullOrWhiteSpace(ButtonTextEntry.Text)))
             {
                 WaitProgressBar.Visibility = Visibility.Collapsed;
+                MessageDialog dialog = new MessageDialog("You must enter a string to be spoken or provide your own sound file", "UB Talker");
+                await dialog.ShowAsync();
                 return;
             }
 
@@ -125,11 +156,19 @@ namespace UBTalker
             /* Add button to database */
             using (var db = new SQLiteConnection(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
-                ModButton.Name = ButtonNameEntry.Text;
-                if (ModButton.Text != ButtonTextEntry.Text)
+                if (SoundFileToggle.IsOn)
                 {
-                    ModButton.Text = ButtonTextEntry.Text;
-                    ModButton.FileName = null;
+                    ModButton.Text = "";
+                    ModButton.FileName = SoundFileEntry.Text;
+                }
+                else
+                {
+                    ModButton.Name = ButtonNameEntry.Text;
+                    if (ModButton.Text != ButtonTextEntry.Text)
+                    {
+                        ModButton.Text = ButtonTextEntry.Text;
+                        ModButton.FileName = null;
+                    }
                 }
                 ModButton.ImagePath = ButtonImageEntry.Text;
                 ModButton.ColorHex = selection.ToString();
@@ -139,6 +178,21 @@ namespace UBTalker
             this.Frame.GoBack();
         }
 
+        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (SoundFileToggle.IsOn)
+            {
+                SoundClipGrid.Visibility = Visibility.Visible;
+                ButtonTextGrid.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SoundClipGrid.Visibility = Visibility.Collapsed;
+                ButtonTextGrid.Visibility = Visibility.Visible;
+            }
+
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -146,7 +200,18 @@ namespace UBTalker
             using (var db = new SQLiteConnection(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "TalkerDB.sqlite")))
             {
                 ModButton = db.Table<Button>().FirstOrDefault(x => x.ID == (int)e.Parameter);
-                ButtonTextEntry.Text = ModButton.Text;
+
+                if (string.IsNullOrWhiteSpace(ModButton.Text))
+                {
+                    SoundFileToggle.IsOn = true;
+                    SoundFileEntry.Text = ModButton.FileName;
+                }
+                else
+                {
+                    SoundFileToggle.IsOn = false;
+                    ButtonTextEntry.Text = ModButton.Text;
+                }
+
                 ButtonImageEntry.Text = ModButton.ImagePath;
                 ButtonNameEntry.Text = ModButton.Name;
                 ColorHex = ModButton.ColorHex;

@@ -10,23 +10,31 @@
     d:DesignWidth="346" Width="346" Height="768">
     <Grid>
         <StackPanel Margin="0">
-            <TextBlock Style="{StaticResource ItemTextStyle}" HorizontalAlignment="Left" Height="34" Margin="22,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Language"/>
+            <TextBlock Style="{StaticResource ItemTextStyle}" HorizontalAlignment="Left" Height="34" Margin="22,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Button Sizing"/>
+            <ComboBox x:Name="SizeSelection" SelectionChanged="SizeSelection_SelectionChanged" SelectedIndex="1" Margin="22,0,152,0">
+                <ComboBoxItem Content="Small" />
+                <ComboBoxItem Content="Medium" />
+                <ComboBoxItem Content="Large" />
+                <ComboBoxItem Content="Extra Large" />
+                <ComboBoxItem Content="Jumbo" />
+            </ComboBox>
+            <TextBlock Style="{StaticResource ItemTextStyle}" HorizontalAlignment="Left" Height="34" Margin="22,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Language"/>
             <ComboBox x:Name="LanguageSelection" SelectionChanged="LanguageSelection_SelectionChanged" Margin="22,0,152,0" SelectedIndex="0">
                 <ComboBoxItem Content="English" Tag="en-us" />
                 <ComboBoxItem Content="Spanish" Tag="es" />
                 <ComboBoxItem Content="French" Tag="fr" />
                 <ComboBoxItem Content="German" Tag="gr" />
             </ComboBox>
-            <ToggleSwitch x:Name="SingleSwitchToggle" Header="Timer" Margin="22,20,152,0" Toggled="ToggleSwitch_Toggled"/>
-            <TextBlock x:Name="IntervalLabel" Style="{StaticResource ItemTextStyle}" HorizontalAlignment="Left" Height="34" Margin="31,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Timer Interval" Width="163"/>
-            <ComboBox x:Name="IntervalSelection" SelectionChanged="IntervalSelection_SelectionChanged" Margin="22,0,152,0" SelectedIndex="0">
+            <ToggleSwitch x:Name="SingleSwitchToggle" Header="Timer" Margin="22,10,152,0" Toggled="ToggleSwitch_Toggled"/>
+            <TextBlock x:Name="IntervalLabel" Style="{StaticResource ItemTextStyle}" Visibility="Collapsed" HorizontalAlignment="Left" Height="34" Margin="31,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Timer Interval" Width="163"/>
+            <ComboBox x:Name="IntervalSelection" SelectionChanged="IntervalSelection_SelectionChanged" Visibility="Collapsed" Margin="22,0,152,0" SelectedIndex="0">
                 <ComboBoxItem Content="1 second" Tag="1" />
                 <ComboBoxItem Content="3 seconds" Tag="3" />
                 <ComboBoxItem Content="5 seconds" Tag="5" />
                 <ComboBoxItem Content="10 seconds" Tag="5" />
             </ComboBox>
-            <TextBlock x:Name="WhisperLabel" Style="{StaticResource ItemTextStyle}" HorizontalAlignment="Left" Height="34" Margin="31,2,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Timer sound output" Width="162"/>
-            <ComboBox x:Name="WhisperSelection" SelectionChanged="WhisperSelection_SelectionChanged" Margin="22,0,152,0" SelectedIndex="0">
+            <TextBlock x:Name="WhisperLabel" Style="{StaticResource ItemTextStyle}" HorizontalAlignment="Left" Visibility="Collapsed" Height="34" Margin="31,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Timer sound output" Width="162"/>
+            <ComboBox x:Name="WhisperSelection" SelectionChanged="WhisperSelection_SelectionChanged" Margin="22,0,152,0" Visibility="Collapsed" SelectedIndex="0">
                 <ComboBoxItem Content="Silent" />
                 <ComboBoxItem Content="Whisper" />
                 <ComboBoxItem Content="Right output only" />

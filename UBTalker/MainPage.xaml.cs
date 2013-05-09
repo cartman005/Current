@@ -41,6 +41,7 @@ namespace UBTalker
         public static string SpeakingLanguage;
         public static bool SingleSwitch;
         public static int Whisper;
+        public static int Size;
         public static DispatcherTimer Timer;
         public static MainPage Current;
         private ObservableCollection<Button> Col;
@@ -93,6 +94,12 @@ namespace UBTalker
                 /* Interval */
                 if (settings.Values.ContainsKey("timer_interval"))
                     Timer.Interval = (TimeSpan)settings.Values["timer_interval"];
+
+                /* Sizes */
+                if (settings.Values.ContainsKey("item_size"))
+                    Size = (int)settings.Values["item_size"];
+                else
+                    Size = 1;
             }
 
             SetSwitch(SingleSwitch);
@@ -710,6 +717,48 @@ namespace UBTalker
                 image.SetSource(stream);
             }
             catch (FileNotFoundException) { }
+        }
+    }
+
+    /* Returns the height for each grid item */
+    public class GetItemHeight : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, String language)
+        {
+            return 150 + (MainPage.Size * 50);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, String language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /* Returns the width for each grid item */
+    public class GetItemWidth : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, String language)
+        {
+            return 200 + (MainPage.Size * 50);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, String language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /* Returns the font size for each grid item */
+    public class GetFontSize : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, String language)
+        {
+            return 15 + (MainPage.Size * 3);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, String language)
+        {
+            throw new NotImplementedException();
         }
     }
 }

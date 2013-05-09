@@ -18,6 +18,9 @@
         <local:StringToColorConverter x:Key="ColorConverter"/>
         <local:StringToImageConverter x:Key="ImageConverter"/>
         <local:BoolToVisibilityConverter x:Key="BoolConverter" />
+        <local:GetItemWidth x:Key="ItemWidth" />
+        <local:GetItemHeight x:Key="ItemHeight" />
+        <local:GetFontSize x:Key="FontSize" />
 
         <Style x:Key="LargerAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
             <Setter Property="AutomationProperties.AutomationId" Value="LargerAppBarButtonStyle"/>
@@ -84,7 +87,7 @@
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Height="150" Width="200" VerticalAlignment="Top" HorizontalAlignment="Left" RightTapped="Item_RightTapped" LostFocus="Item_Deselected" Background="{Binding ColorHex}">
+                    <Grid Height="{Binding Converter={StaticResource ItemHeight}}" Width="{Binding Converter={StaticResource ItemWidth}}" VerticalAlignment="Top" HorizontalAlignment="Left" RightTapped="Item_RightTapped" LostFocus="Item_Deselected" Background="{Binding ColorHex}">
                        <!-- <Grid.Background>
                             <ImageBrush ImageSource="{Binding Path=ImagePath, Converter={StaticResource ImageConverter}}" Stretch="UniformToFill" />
                         </Grid.Background> -->
@@ -94,7 +97,7 @@
                                 <SolidColorBrush Color="{Binding Path=ColorHex, Converter={StaticResource ColorConverter}}" Opacity="0.8" />
                             </StackPanel.Background>
                             <Image Width="40" Height="40" Source="Assets/folder.png" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{Binding Path=isFolder, Converter={StaticResource BoolConverter}}"></Image>
-                            <TextBlock FontSize="15" Margin="10" Foreground="{Binding FontColor}" FontWeight="Bold">
+                            <TextBlock FontSize="{Binding Converter={StaticResource FontSize}}" Margin="10" Foreground="{Binding FontColor}" FontWeight="Bold">
                                 <Run Text="{Binding Name}"/>
                             </TextBlock>
                         </StackPanel>

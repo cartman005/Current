@@ -41,6 +41,8 @@ namespace UBTalker.SettingsViews
                     break;
             }
 
+            SizeSelection.SelectedIndex = MainPage.Size;
+
             if (MainPage.Timer.Interval == TimeSpan.FromSeconds(1))
                 IntervalSelection.SelectedIndex = 0;
             else if (MainPage.Timer.Interval == TimeSpan.FromSeconds(3))
@@ -177,6 +179,27 @@ namespace UBTalker.SettingsViews
                     else
                         settings.Values.Add("whisper", MainPage.Whisper);
                 }
+            }
+            catch (Exception) { }
+        }
+
+        private void SizeSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                /* Update size */
+                MainPage.Size = SizeSelection.SelectedIndex;
+
+                /* Store setting */
+                var settings = ApplicationData.Current.LocalSettings;
+                if (settings != null)
+                {
+                    if (settings.Values.ContainsKey("item_size"))
+                        settings.Values["item_size"] = MainPage.Size;
+                    else
+                        settings.Values.Add("item_size", MainPage.Size);
+                }
+
             }
             catch (Exception) { }
         }
